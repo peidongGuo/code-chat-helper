@@ -1,6 +1,8 @@
 import os
+import hmac
+import hashlib
 import openai
-from flask import Flask, request
+from flask import Flask, request, abort
 from github import Github
 
 app = Flask(__name__)
@@ -11,9 +13,29 @@ openai.api_key = os.environ.get("OPENAI_API_KEY")
 # Set up GitHub API client
 gh = Github(os.environ.get("GITHUB_TOKEN"))
 
+# Set up webhook secret
+webhook_secret = os.environ.get("WEBHOOK_SECRET")
+
+
+def validate_signature(request):
+    signature = request.headers.get('X-Hub-Signature-256')
+    if signature is None:
+        return False
+
+    sha_name, signature = signature.split('=')
+    if sha_name != 'sha256':
+        return False
+
+    mac = hmac.new(webhook_secret.encode(), msg=request.data,
+                   digestmod=hashlib.sha256)
+    return hmac.compare_digest(mac.hexdigest(), signature)
+
 
 @app.route('/review_pr', methods=['POST'])
 def review_pr():
+    if not validate_signature(request):
+        abort(401, 'Invalid signature')
+
     event = request.get_json()
 
     if event['action'] not in ['opened', 'synchronize', 'reopened']:
