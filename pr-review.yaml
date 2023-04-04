@@ -1,0 +1,52 @@
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: gpt-assist
+---
+apiVersion: v1
+kind: Secret
+metadata:
+  name: pr-review-gpt-secrets
+  namespace: pr-review-gpt
+type: Opaque
+data:
+  OPENAI_API_KEY: ${OPENAI_API_KEY_BASE64}
+  GITHUB_TOKEN: ${GITHUB_TOKEN_BASE64}
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: pr-review-gpt
+  namespace: pr-review-gpt
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: pr-review-gpt
+  template:
+    metadata:
+      labels:
+        app: pr-review-gpt
+    spec:
+      containers:
+        - name: pr-review-gpt
+          image: openrhino/pr-review-gpt
+          ports:
+            - containerPort: 8080
+          envFrom:
+            - secretRef:
+                name: pr-review-gpt-secrets
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: pr-review-gpt
+  namespace: pr-review-gpt
+spec:
+  selector:
+    app: pr-review-gpt
+  ports:
+    - protocol: TCP
+      port: 80
+      targetPort: 8080
+  type: LoadBalancer
