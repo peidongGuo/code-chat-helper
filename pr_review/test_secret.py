@@ -10,12 +10,12 @@ secret = os.environ.get("WEBHOOK_SECRET")
 payload = {
     "action": "opened",
     "pull_request": {
-        "title": "Test PR",
-        "body": "This is a test PR.",
-        "number": 2
+        "title": "Add new status ImageError to fix #25",
+        "body": "添加了一个新的状态ImageError，当镜像拉取失败时更新到该状态。",
+        "number": 37
     },
     "repository": {
-        "full_name": "LI-Mingyu/cndev-tutorial"
+        "full_name": "OpenRHINO/RHINO-Operator"
     }
 }
 headers = {
