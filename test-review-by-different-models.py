@@ -4,20 +4,21 @@ import hashlib
 from time import sleep
 import openai
 from github import Github
+import re
 
 
-def preprocess_changes(changes_str):
-    lines = changes_str.split('\n')
-    processed_lines = []
-    for line in lines:
-        if line.startswith('+'):
-            processed_lines.append(f'(+) {line[1:]}')
-        elif line.startswith('-'):
-            processed_lines.append(f'(-) {line[1:]}')
-        else:
-            processed_lines.append(line)
-    return '\n'.join(processed_lines)
-
+# def preprocess_changes(changes_str):
+# return re.sub(r'@@.*?@@', '', changes_str)  # 移除 @@ ... @@ 行
+# lines = changes_str.split('\n')
+# processed_lines = []
+# for line in lines:
+#     if line.startswith('+'):
+#         processed_lines.append(f'(+) {line[1:]}')
+#     elif line.startswith('-'):
+#         processed_lines.append(f'(-) {line[1:]}')
+#     else:
+#         processed_lines.append(line)
+# return '\n'.join(processed_lines)
 
 # Set up OpenAI API client
 openai.api_key = os.environ.get("OPENAI_API_KEY")
@@ -25,14 +26,18 @@ openai.api_key = os.environ.get("OPENAI_API_KEY")
 gh = Github(os.environ.get("GITHUB_TOKEN"))
 
 # Get the code changes from the PR
-gh_repo = gh.get_repo("pytorch/pytorch")
-gh_pr = gh_repo.get_pull(98916)
-# gh_repo = gh.get_repo("OpenRHINO/RHINO-Operator")
-# gh_pr = gh_repo.get_pull(31)
-# gh_pr = gh_repo.get_pull(29)
-# gh_pr = gh_repo.get_pull(37)
-# gh_pr = gh_repo.get_pull(7)
+# gh_repo = gh.get_repo("pytorch/pytorch")
+# gh_pr = gh_repo.get_pull(98916)
+gh_repo = gh.get_repo("OpenRHINO/RHINO-Operator")
+gh_pr = gh_repo.get_pull(38)
+# gh_repo = gh.get_repo("OpenRHINO/RHINO-CLI")
+# #gh_pr = gh_repo.get_pull(58) #这里有很多exit(0)或exit(1)改为return err, 但是gpt-3.5-turbo生成的review中经常会弄反
+# gh_pr = gh_repo.get_pull(46)
 code_changes = gh_pr.get_files()
+
+# gh_repo = gh.get_repo("kubernetes/kubernetes")
+# gh_pr = gh_repo.get_pull(117245)
+# code_changes = gh_pr.get_files()
 
 # Concatenate the changes into a single string
 changes_str = "Title: " + gh_pr.title + "\n"
@@ -40,7 +45,7 @@ if gh_pr.body is not None:
     changes_str += "Body: " + gh_pr.body + "\n"
 for change in code_changes:
     changes_str += f"File: {change.filename}\nPatch:\n{change.patch}\n\n"
-#changes_str = preprocess_changes(changes_str)
+# changes_str = preprocess_changes(changes_str)
 print(changes_str)
 
 # Call GPT to get the review result
@@ -49,12 +54,12 @@ messages = [
         "role": "system",
         "content": "As an AI assistant with programming expertise, you are a meticulous code reviewer."},
     {"role": "user",
-        "content": f"Review the following pull request:\n{changes_str}"}
+        "content": f"Review the following pull request:\n{changes_str}\n\nThe '+' means the line is added, and the '-' means the line is removed. Please provide a review result for the PR."}
 ]
 response = openai.ChatCompletion.create(
     model="gpt-3.5-turbo",
     messages=messages,
-    max_tokens=300,
+    max_tokens=600,
     temperature=0.5,
     n=5
 )
@@ -68,20 +73,11 @@ reviews_str = "\n".join(reviews)
 print(reviews_str)
 # Call GPT to generate the summary of the reviews
 summary_messages = [
-        {"role": "system",
-         "content": f"Here are some review results for reference\n{reviews_str}"},
+    {"role": "system",
+     "content": f"Here are some review results for reference:\n{reviews_str}"},
     {"role": "user",
-     #         "content": f"You are a software developing expert. Review this PR:\n\n{changes_str}\n\nMake sure to use the template provided by the system when you output your review result, and indicate in the 'Suggestions' section which ones you referred to from existing review results and which ones you proposed yourself."
-
-     #         "content": f"Review the PR\n{changes_str}\n\nMake sure to use the template provided by the system, and indicate in the 'Suggestions' section which ones you referred to from existing review results and which ones you proposed yourself."
-
-        #    "content": f"""You are a software developing expert. Please summarize the review results using the template provided by the system. 
-        #    Begin your output with 'Here is the review result:', indicating in the 'Suggestions' section the source of each suggestion, i.e., from which review it came. 
-        #    And tell us which suggestions are more important than others, keeping in mind that the more important suggestions may not necessarily be the ones mentioned by more reviewers."""
-     "content": """You are a software developing expert. Please summarize the review results. Ensure that the output follows the template:'\n\n**[Changes]**\n\n**[Suggestions]**\n\n**[Conclusion]**\n\n**[Action]**\n\n**[Other]**\n\n'.
-            Also, tell us which suggestions are more important than others, keeping in mind that the more important suggestions may not necessarily be the ones mentioned by more reviewers."""
-           }
-     ]
+     "content": "You are a software developing expert. Please summarize the review results. Ensure that the output follows the template:'\n\n**[Changes]**\n\n**[Suggestions]**\n\n**[Conclusion]**\n\n**[Action]**\n\n**[Other]**\n\n'."}
+]
 
 summary_response = openai.ChatCompletion.create(
     model="gpt-3.5-turbo",
@@ -91,7 +87,10 @@ summary_response = openai.ChatCompletion.create(
     n=1
 )
 
-final_review = f"**[AI Review]** This comment is generated by an AI model (gpt-3.5-turbo).\n\n{summary_response.choices[0]['message']['content'].strip()}\n\n**[Note]** The above AI review results are for reference only, please rely on human expert review results for the final conclusion.\n\n"
+final_review = f"""**[AI Review]** This comment is generated by an AI model (gpt-3.5-turbo).\n\n{summary_response.choices[0]['message']['content'].strip()}\n
+**[Note]** 
+The above AI review results are for reference only, please rely on human expert review results for the final conclusion.
+Usually, AI is better at enhancing the quality of code snippets. However, it's essential for human experts to pay close attention to whether the modifications meet the overall requirements. Providing detailed information in the PR description helps the AI generate more specific and useful review results.\n\n"""
 
 # Print the final review result
 print(final_review)
@@ -110,43 +109,18 @@ translated_response = openai.ChatCompletion.create(
 )
 print(translated_response.choices[0]['message']['content'].strip())
 
-
-# Call GPT to generate the summary of the reviews in Chinese
-summary_messages_chinese = [
-    {"role": "system",
-     "content": f"Here are some review results for reference\n{reviews_str}"},
-    {"role": "user",
-     #              "content": f"You are a software developing expert. Review this PR:\n\n{changes_str}\n\nMake sure to use the template provided by the system when you output your review result, and indicate in the 'Suggestions' section which ones you referred to from existing review results and which ones you proposed yourself."
-     #         "content": f"Review the PR\n{changes_str}\n\nMake sure to use the template provided by the system, and indicate in the 'Suggestions' section which ones you referred to from existing review results and which ones you proposed yourself."
-        #    "content": f"""You are a software developing expert. Please summarize the review results using the template provided by the system.
-        #    Begin your output with 'Here is the review result:', indicating in the 'Suggestions' section the source of each suggestion, i.e., from which review it came.
-        #    And tell us which suggestions are more important than others, keeping in mind that the more important suggestions may not necessarily be the ones mentioned by more reviewers."""
-     "content": """GPT，你现在是一个软件开发专家。请按照如下模板整理评审结果:'\n\n**[变更]**\n\n**[建议]**\n\n**[结论]**\n\n**[下一步动作]**\n\n**[其他]**\n\n'。请用中文输出你的评审结果。
-            如果[修改建议]一节的内容较多，请在最后说明你认为哪些修改建议是比较重要的。"""
-     }
-]
-
-summary_response_chinese = openai.ChatCompletion.create(
-    model="gpt-3.5-turbo",
-    messages=summary_messages_chinese,
-    max_tokens=1000,
-    temperature=0.5,
-    n=1
-)
-
-final_review_chinese = f"\n\n**[AI Review]** 这条评论是由AI模型（gpt-3.5-turbo）生成的。\n\n{summary_response_chinese.choices[0]['message']['content'].strip()}\n\n**[注意]** 上述AI评审结果仅供参考，最终评审结果请以人类专家为准。\n\n"
-print(final_review_chinese)
-# response = openai.Completion.create(
-#     engine="text-davinci-003",
-#     prompt=f"请帮忙评审一个PR:\n{changes_str}",
-#     max_tokens=300,
-#     n=2,
-#     stop=None,
-#     temperature=0.1,
+# code_modification_messages = [
+#     {"role": "system",
+#      "content": f"Here are some review results:\n{summary_response.choices[0]['message']['content'].strip()}"},
+#     {"role": "user",
+#         "content": f"Please follow the provided suggestions to modify the following code. Update the parts you can, and if you're unsure how to make a change, feel free to skip it. Output the modified code snippet directly, without using the code changes format. There is no need to include parts that haven't been modified.\n{changes_str}"
+#     }
+# ]
+# code_modification_response = openai.ChatCompletion.create(
+#     model="gpt-3.5-turbo",
+#     messages=code_modification_messages,
+#     max_tokens=2000,
+#     temperature=0.5,
+#     n=1
 # )
-# review = f"**[AI Review]** This comment is generated by an AI model (text-davinci-003).\n\n{response.choices[0].text.strip()}"
-# print(review)
-# print("\n")
-##### text-davinci-003 经常得到不完整的输出 #####
-# sleep(5)
-
+# print(code_modification_response.choices[0]['message']['content'].strip())
