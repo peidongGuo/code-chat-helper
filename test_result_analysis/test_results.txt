@@ -1,0 +1,338 @@
+?   	github.com/OpenRHINO/RHINO-CLI	[no test files]
+=== RUN   TestBuildSingleFileCpp
+Error: image name can only contain a~z, 0~9 and -
+Usage:
+  rhino build [flags]
+
+Examples:
+  rhino build --image foo/hello:v1.0
+  rhino build -f ./src/config/Makefile -i bar/mpibench:v2.1 -- make -j all arch=Linux
+
+Flags:
+  -f, --file string    relative path of the makefile
+  -h, --help           help for build
+  -i, --image string   full image form: [registry]/[namespace]/[name]:[tag]
+
+Error: build command must start with 'make'
+Usage:
+  rhino build [flags]
+
+Examples:
+  rhino build --image foo/hello:v1.0
+  rhino build -f ./src/config/Makefile -i bar/mpibench:v2.1 -- make -j all arch=Linux
+
+Flags:
+  -f, --file string    relative path of the makefile
+  -h, --help           help for build
+  -i, --image string   full image form: [registry]/[namespace]/[name]:[tag]
+
+Makefile path: ./src/Makefile
+Build command: [make]
+Build tools found. Start building...
+#1 [internal] load build definition from Dockerfile
+#1 sha256:66f44ac3627fe8bd3c50243abd02f6f1f5cd291792b817d8a64e52fca9098e45
+#1 transferring dockerfile: 502B 0.0s done
+#1 DONE 0.0s
+
+#2 [internal] load .dockerignore
+#2 sha256:265ba5cb570ea5e755ebf94d85f8ace258ccc7450f7dc966b62f70507a9efd9b
+#2 transferring context: 2B done
+#2 DONE 0.0s
+
+#4 [internal] load metadata for docker.io/openrhino/mpibuilder_base:v0.1.0
+#4 sha256:3951b4597ba8e96e15ac9a0cbba26c936081d42ddce1645203d0eadd677743cb
+#4 DONE 0.0s
+
+#3 [internal] load metadata for docker.io/openrhino/mpirun_base:v0.1.0
+#3 sha256:83c99222332e3a5785219e51a92a56d27e3ef5dd4a5e7225a3ad4800d6a0973b
+#3 DONE 0.0s
+
+#13 [builder 1/5] FROM docker.io/openrhino/mpibuilder_base:v0.1.0
+#13 sha256:695f0f019154aad7194526b15b5857f654d4797aa1076c11c3327958b19abb40
+#13 DONE 0.0s
+
+#5 [stage-1 1/3] FROM docker.io/openrhino/mpirun_base:v0.1.0
+#5 sha256:e6892422a6de7bc87d7724ae4d2333b8de73056108ccb64791012b8f7d8eb099
+#5 DONE 0.0s
+
+#6 [internal] load build context
+#6 sha256:0da37a63673d7f63124f1b96b22ac566f04d75ee2e7e0079721157b5adfb0333
+#6 transferring context: 3.10kB done
+#6 DONE 0.0s
+
+#9 [builder 4/5] RUN cd $(dirname ./src/Makefile) && make -B -f $(basename ./src/Makefile) 
+#9 sha256:17d3bfe9828b5aa00951dec15c267f615d77001dfd3af5bc6233246c9c19cf3f
+#9 CACHED
+
+#11 [stage-1 2/3] COPY --from=builder /app/mpi-func  /app/mpi-func
+#11 sha256:bf1542a157a811ef2931316cca296c830803ee507afb8134837e589307765729
+#11 CACHED
+
+#7 [builder 2/5] COPY src/ /app/src
+#7 sha256:917796dcbcc7ead33699981a63d817974ac72d7ee01145c0334f76bc46b3cfda
+#7 CACHED
+
+#8 [builder 3/5] COPY ldd.sh /app/
+#8 sha256:58737f85be12ea66b041f3011108554ea80dcc4c3fe0f92cedbd4c4c813954ec
+#8 CACHED
+
+#10 [builder 5/5] RUN sh ldd.sh
+#10 sha256:4a51ec963e48709c36e0786977aba1329111db124737f69b44432d39f2df143b
+#10 CACHED
+
+#12 [stage-1 3/3] COPY --from=builder /shared_lib /usr/local/lib
+#12 sha256:2a92acf1524101f27c6cb8a0124608797c58fc8405b8e0785a999ecbe7d855c5
+#12 CACHED
+
+#14 exporting to image
+#14 sha256:e8c613e07b0b7ff33893b694f7759a10d42e180f2b4dc349fb57dc6b71dcab00
+#14 exporting layers done
+#14 writing image sha256:c33bcb3119575c7f72c52004e9cf342be83e4b8e45f2cf17f2abbf750afa3383 done
+#14 naming to docker.io/library/test-build-func-cpp:v1 done
+#14 DONE 0.0s
+--- PASS: TestBuildSingleFileCpp (1.32s)
+=== RUN   TestCreateLangErr
+Error: only supports cpp in this version
+Usage:
+  rhino create [flags]
+
+Examples:
+  C++ function: rhino create func_name -l cpp
+
+Flags:
+  -h, --help          help for create
+  -l, --lang string   language template to use (default "cpp")
+
+--- PASS: TestCreateLangErr (0.00s)
+=== RUN   TestCreateFunc
+--- PASS: TestCreateFunc (0.01s)
+=== RUN   TestDeleteSingleJob
+Makefile path: ./src/Makefile
+Build command: [make]
+Build tools found. Start building...
+#1 [internal] load build definition from Dockerfile
+#1 sha256:f26896e03758ba41f76a4b52c2fcc53820d161df675dceed81978d279d95cc01
+#1 transferring dockerfile: 502B done
+#1 DONE 0.0s
+
+#2 [internal] load .dockerignore
+#2 sha256:c96687b109ff9447f02e85f7f4140b9fa3df0f3dd464bb893e8f120a7ecacb99
+#2 transferring context: 2B done
+#2 DONE 0.0s
+
+#4 [internal] load metadata for docker.io/openrhino/mpirun_base:v0.1.0
+#4 sha256:83c99222332e3a5785219e51a92a56d27e3ef5dd4a5e7225a3ad4800d6a0973b
+#4 DONE 0.0s
+
+#3 [internal] load metadata for docker.io/openrhino/mpibuilder_base:v0.1.0
+#3 sha256:3951b4597ba8e96e15ac9a0cbba26c936081d42ddce1645203d0eadd677743cb
+#3 DONE 0.0s
+
+#6 [builder 1/5] FROM docker.io/openrhino/mpibuilder_base:v0.1.0
+#6 sha256:695f0f019154aad7194526b15b5857f654d4797aa1076c11c3327958b19abb40
+#6 DONE 0.0s
+
+#5 [stage-1 1/3] FROM docker.io/openrhino/mpirun_base:v0.1.0
+#5 sha256:e6892422a6de7bc87d7724ae4d2333b8de73056108ccb64791012b8f7d8eb099
+#5 DONE 0.0s
+
+#7 [internal] load build context
+#7 sha256:f07873639948b6ff3f1f0c6684ced4404e746dfee09aabdf8a15ee2a28974916
+#7 transferring context: 3.10kB done
+#7 DONE 0.0s
+
+#8 [builder 2/5] COPY src/ /app/src
+#8 sha256:359df5a4261f4009cff488a69f8063195bf5a0e2780534751e6b3d6bbaf04d0f
+#8 CACHED
+
+#12 [stage-1 2/3] COPY --from=builder /app/mpi-func  /app/mpi-func
+#12 sha256:6ba33f8394906cebd9d9523a007275d363a7df4ec4b771158a6bb6075a4f7616
+#12 CACHED
+
+#9 [builder 3/5] COPY ldd.sh /app/
+#9 sha256:4cb484864316fe74c23704202e27ad8bbe06fe915294795d9abeee3b3652842c
+#9 CACHED
+
+#10 [builder 4/5] RUN cd $(dirname ./src/Makefile) && make -B -f $(basename ./src/Makefile) 
+#10 sha256:b87df7c982cb574a493dae9660a0ba7e0a334bd98da3d003c8c85c33f2679f9d
+#10 CACHED
+
+#11 [builder 5/5] RUN sh ldd.sh
+#11 sha256:610c52834a8ca55fcaee595b9f9707688e19a9a18ee55c356a89162c9efba8f8
+#11 CACHED
+
+#13 [stage-1 3/3] COPY --from=builder /shared_lib /usr/local/lib
+#13 sha256:148c2027e101d38ee48e3a4e12a28e0efa472354ceb3cec7ab0ce8a949a8d260
+#13 CACHED
+
+#14 exporting to image
+#14 sha256:e8c613e07b0b7ff33893b694f7759a10d42e180f2b4dc349fb57dc6b71dcab00
+#14 exporting layers done
+#14 writing image sha256:c33bcb3119575c7f72c52004e9cf342be83e4b8e45f2cf17f2abbf750afa3383
+#14 writing image sha256:c33bcb3119575c7f72c52004e9cf342be83e4b8e45f2cf17f2abbf750afa3383 done
+#14 naming to docker.io/library/test-delete-func-cpp:v1 done
+#14 DONE 0.0s
+RhinoJob test-delete-func-cpp created
+Wait 10s and check job status
+RhinoJob test-delete-func-cpp deleted
+--- PASS: TestDeleteSingleJob (17.33s)
+=== RUN   TestNewDockerRunCommand
+--- PASS: TestNewDockerRunCommand (0.00s)
+=== RUN   TestDockerRunWithNoArgs
+Global sum: 4503663
+--- PASS: TestDockerRunWithNoArgs (0.61s)
+=== RUN   TestDockerRunWithNonExistentImage
+Image openrhino/do-not-exist not found, pulling from Docker Hub...
+--- PASS: TestDockerRunWithNonExistentImage (8.81s)
+=== RUN   TestDockerRunWithArgs
+Result:  0.000000
+Time: 0.00s
+--- PASS: TestDockerRunWithArgs (0.59s)
+=== RUN   TestDockerRunWithInvalidFlag
+--- PASS: TestDockerRunWithInvalidFlag (0.71s)
+=== RUN   TestDockerRunWithInvalidArgs
+Function needs 3 Parameters: start(double), end(double), interval(int)
+application called MPI_Abort(MPI_COMM_WORLD, -1) - process 0
+--- PASS: TestDockerRunWithInvalidArgs (0.84s)
+=== RUN   TestListSingleJob
+Makefile path: ./src/Makefile
+Build command: [make]
+Build tools found. Start building...
+#1 [internal] load build definition from Dockerfile
+#1 sha256:6a6efcbf9ea9d8cb2cbf90912049b95d748b65d5b7bd64205bbf39738dcd2d4a
+#1 transferring dockerfile: 37B done
+#1 DONE 0.0s
+
+#2 [internal] load .dockerignore
+#2 sha256:f1a778d84ccb16bc2f26b33adb7fb27389cdf79e2902748b60e7b32e2e1a56a8
+#2 transferring context: 2B done
+#2 DONE 0.0s
+
+#4 [internal] load metadata for docker.io/openrhino/mpirun_base:v0.1.0
+#4 sha256:83c99222332e3a5785219e51a92a56d27e3ef5dd4a5e7225a3ad4800d6a0973b
+#4 DONE 0.0s
+
+#3 [internal] load metadata for docker.io/openrhino/mpibuilder_base:v0.1.0
+#3 sha256:3951b4597ba8e96e15ac9a0cbba26c936081d42ddce1645203d0eadd677743cb
+#3 DONE 0.0s
+
+#5 [stage-1 1/3] FROM docker.io/openrhino/mpirun_base:v0.1.0
+#5 sha256:e6892422a6de7bc87d7724ae4d2333b8de73056108ccb64791012b8f7d8eb099
+#5 DONE 0.0s
+
+#6 [builder 1/5] FROM docker.io/openrhino/mpibuilder_base:v0.1.0
+#6 sha256:695f0f019154aad7194526b15b5857f654d4797aa1076c11c3327958b19abb40
+#6 DONE 0.0s
+
+#7 [internal] load build context
+#7 sha256:163f82f09277038c7ef86bc57aeccd54e64220f2584c24d0a1bc3a22ee7bd565
+#7 transferring context: 115B done
+#7 DONE 0.0s
+
+#8 [builder 2/5] COPY src/ /app/src
+#8 sha256:b111354e4495f55059b413275560fb0dcd0d3f9f419d28621275a231eacfcce3
+#8 CACHED
+
+#10 [builder 4/5] RUN cd $(dirname ./src/Makefile) && make -B -f $(basename ./src/Makefile) 
+#10 sha256:ab43bc96b20a333c7d9e10193751eb35842fcc537f3b560dbe19f9568eba5a97
+#10 CACHED
+
+#11 [builder 5/5] RUN sh ldd.sh
+#11 sha256:cdf148f8d2dc07b70f4fc3c9d71109b157cf64cd1cc5101834fcc91a98e70ab0
+#11 CACHED
+
+#12 [stage-1 2/3] COPY --from=builder /app/mpi-func  /app/mpi-func
+#12 sha256:fd98e92cea25906f0f6c83e600fdf44762f86200d2f3a00cc689251e622c2afe
+#12 CACHED
+
+#9 [builder 3/5] COPY ldd.sh /app/
+#9 sha256:994cbd09c522351c5a942409c3c929fe652ddb102f6e48637217f043dc3c24d9
+#9 CACHED
+
+#13 [stage-1 3/3] COPY --from=builder /shared_lib /usr/local/lib
+#13 sha256:1aefd0c046bb9106f735195fae2ced4e26a0f0c7ea06f0d20fb51a8b7b85e27d
+#13 CACHED
+
+#14 exporting to image
+#14 sha256:e8c613e07b0b7ff33893b694f7759a10d42e180f2b4dc349fb57dc6b71dcab00
+#14 exporting layers done
+#14 writing image sha256:c33bcb3119575c7f72c52004e9cf342be83e4b8e45f2cf17f2abbf750afa3383 done
+#14 naming to docker.io/library/test-list-func-cpp:v1 done
+#14 DONE 0.0s
+RhinoJob test-list-func-cpp created
+Wait 10s and check job status
+--- PASS: TestListSingleJob (16.91s)
+=== RUN   TestRunSingleJob
+Makefile path: ./src/Makefile
+Build command: [make]
+Build tools found. Start building...
+#1 [internal] load build definition from Dockerfile
+#1 sha256:63e3ba94dffc3a2e51b14ba4de4dd9d94597744778a080940c7d0cfa480e7dcf
+#1 transferring dockerfile: 37B done
+#1 DONE 0.0s
+
+#2 [internal] load .dockerignore
+#2 sha256:156cc1c9c312003e1815a660809d8f8397e708c02c0763f46d9fc4278fca6099
+#2 transferring context: 2B done
+#2 DONE 0.0s
+
+#3 [internal] load metadata for docker.io/openrhino/mpirun_base:v0.1.0
+#3 sha256:83c99222332e3a5785219e51a92a56d27e3ef5dd4a5e7225a3ad4800d6a0973b
+#3 DONE 0.0s
+
+#4 [internal] load metadata for docker.io/openrhino/mpibuilder_base:v0.1.0
+#4 sha256:3951b4597ba8e96e15ac9a0cbba26c936081d42ddce1645203d0eadd677743cb
+#4 DONE 0.0s
+
+#5 [stage-1 1/3] FROM docker.io/openrhino/mpirun_base:v0.1.0
+#5 sha256:e6892422a6de7bc87d7724ae4d2333b8de73056108ccb64791012b8f7d8eb099
+#5 DONE 0.0s
+
+#6 [builder 1/5] FROM docker.io/openrhino/mpibuilder_base:v0.1.0
+#6 sha256:695f0f019154aad7194526b15b5857f654d4797aa1076c11c3327958b19abb40
+#6 DONE 0.0s
+
+#7 [internal] load build context
+#7 sha256:172b4b853d3f97347214f12ca9810910da7e90c7bcb151d7221b742f8d8893be
+#7 transferring context: 115B done
+#7 DONE 0.0s
+
+#8 [builder 2/5] COPY src/ /app/src
+#8 sha256:24c81b4daba8d2c46b5a015f67ed3b815c74ccd6a0aecb4f04aa071cd5785d8b
+#8 CACHED
+
+#12 [stage-1 2/3] COPY --from=builder /app/mpi-func  /app/mpi-func
+#12 sha256:45ebee6945418413dc35d938eaab7154d303c8e2b0b2eabf5dd89400c1331549
+#12 CACHED
+
+#9 [builder 3/5] COPY ldd.sh /app/
+#9 sha256:0e8c9909aeb2943bac916d46657201bed73a55efc639a1934bc5f0598cd44b49
+#9 CACHED
+
+#10 [builder 4/5] RUN cd $(dirname ./src/Makefile) && make -B -f $(basename ./src/Makefile) 
+#10 sha256:e1e98f6d04d14f97fdaedc71aed2a22c50941dbb26b27e1670d0f9237e2ec4be
+#10 CACHED
+
+#11 [builder 5/5] RUN sh ldd.sh
+#11 sha256:ce38829e70449a189a71b32560c2de34bd7e2c6f11612ce77eac4f86ca02fe87
+#11 CACHED
+
+#13 [stage-1 3/3] COPY --from=builder /shared_lib /usr/local/lib
+#13 sha256:9d67d01339700c7c035fc6f99822eda17a228dc672b57cdcbc7b71f25fbd1acd
+#13 CACHED
+
+#14 exporting to image
+#14 sha256:e8c613e07b0b7ff33893b694f7759a10d42e180f2b4dc349fb57dc6b71dcab00
+#14 exporting layers done
+#14 writing image sha256:c33bcb3119575c7f72c52004e9cf342be83e4b8e45f2cf17f2abbf750afa3383 done
+#14 naming to docker.io/library/test-run-func-cpp:v1 done
+#14 DONE 0.0s
+RhinoJob test-run-func-cpp created
+Wait 60s and check job status
+--- PASS: TestRunSingleJob (67.19s)
+=== RUN   TestNewRootCommand
+--- PASS: TestNewRootCommand (0.00s)
+PASS
+ok  	github.com/OpenRHINO/RHINO-CLI/cmd	115.357s
+?   	github.com/OpenRHINO/RHINO-CLI/generate	[no test files]
+?   	github.com/OpenRHINO/RHINO-CLI/generate/generator	[no test files]
