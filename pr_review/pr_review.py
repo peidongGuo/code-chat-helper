@@ -50,7 +50,6 @@ def review_pr():
     code_changes = gh_pr.get_files()
 
     # Concatenate the changes into a single string
-    # Concatenate the changes into a single string
     changes_str = "Title: " + gh_pr.title + "\n"
     if gh_pr.body is not None:
         changes_str += "Body: " + gh_pr.body + "\n"
