@@ -85,12 +85,8 @@ def review_pr():
         "content": f"Here are some review results for reference:\n{reviews_str}"},
         {"role": "user",
          "content":"These reviews results are merely surface-level. Please remeber you are an expert, provide a more detailed review result."},
-        # {"role": "user",
-        #  "content": "Please summarize the review results. Ensure that the output follows the template:'\n\n**[Changes]**\n\n**[Suggestions]**\n\n**[Conclusion]**\n\n**[Action]**\n\n**[Other]**\n\n'."},
         {"role": "user",
          "content": "NOTE THAT YOU ARE AN EXPERT. Please summarize the review results. Ensure that the output follows the template:'\n\n**[Changes]**\n\n**[Suggestions]**\n\n**[Conclusion]**\n\n**[Action]**\n\n**[Other]**\n\n'."},
-        # {"role": "user",
-        # "content": "You are a software developing expert. Please summarize the review results. Ensure that the output follows the template:'\n\n**[Changes]**\n\n**[Suggestions]**\n\n**[Conclusion]**\n\n**[Action]**\n\n**[Other]**\n\n'."}
     ]
 
     summary_response = openai.ChatCompletion.create(
