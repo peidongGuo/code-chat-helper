@@ -52,11 +52,15 @@ def review_pr():
     pr = event['pull_request']
     repo = event['repository']
 
-    # Get the code changes from the PR
-    gh_repo = gh.get_repo(repo['full_name'])
-    logging.info("Sending request to GitHub API")
-    gh_pr = gh_repo.get_pull(pr['number'])
-    code_changes = gh_pr.get_files()
+    try:
+        # Get the code changes from the PR
+        gh_repo = gh.get_repo(repo['full_name'])
+        logging.info("Sending request to GitHub API")
+        gh_pr = gh_repo.get_pull(pr['number'])
+        code_changes = gh_pr.get_files()
+    except Exception as e:
+        logging.error(f"Error while fetching PR details from GitHub API: {e}")
+        return 'Error while fetching PR details from GitHub API', 500
 
     # Concatenate the changes into a single string
     logging.info("Preparing GPT request with code changes")
@@ -66,27 +70,31 @@ def review_pr():
     for change in code_changes:
         changes_str += f"File: {change.filename}\nPatch:\n{change.patch}\n\n"
 
-    # Call GPT to get the review result
-    logging.info("Sending request to OpenAI API")
-    messages = [
-        {
-            "role": "system",
-            "content": "As an AI assistant with programming expertise, you are a meticulous code reviewer."},
-        {"role": "user",
-         "content": f"Review the following pull request:\n{changes_str}\n\nThe '+' means the line is added, and the '-' means the line is removed. Please provide a review result for the PR."}
-    ]
-    response = openai.ChatCompletion.create(
-        model="gpt-3.5-turbo",
-        messages=messages,
-        max_tokens=600,
-        temperature=0.5,
-        n=3,
-    )
-    logging.info("Received response from OpenAI API")
+    try:
+        # Call GPT to get the review result
+        logging.info("Sending request to OpenAI API")
+        messages = [
+            {
+                "role": "system",
+                "content": "As an AI assistant with programming expertise, you are a meticulous code reviewer."},
+            {"role": "user",
+             "content": f"Review the following pull request:\n{changes_str}\n\nThe '+' means the line is added, and the '-' means the line is removed. Please provide a review result for the PR."}
+        ]
+        response = openai.ChatCompletion.create(
+            model="gpt-3.5-turbo",
+            messages=messages,
+            max_tokens=600,
+            temperature=0.5,
+            n=3,
+        )
+        logging.info("Received response from OpenAI API")
+    except Exception as e:
+        logging.error(f"Error while calling OpenAI API: {e}")
+        return 'Error while calling OpenAI API', 500
 
     reviews = [
         f"Review {i+1}:\n{response.choices[i]['message']['content'].strip()}\n" for i in range(len(response.choices))]
-    
+
     # Combine the reviews into a single string
     reviews_str = "\n".join(reviews)
 
@@ -130,11 +138,15 @@ def review_pr():
     )
     logging.info("Translation completed")
 
-    # Post the GPT result as a PR comment
-    logging.info("Submitting PR review comment")
-    gh_pr.create_issue_comment(
-        translated_response.choices[0]['message']['content'].strip())
-    logging.info("PR review comment submitted")
+    try:
+        # Post the GPT result as a PR comment
+        logging.info("Submitting PR review comment")
+        gh_pr.create_issue_comment(
+            translated_response.choices[0]['message']['content'].strip())
+        logging.info("PR review comment submitted")
+    except Exception as e:
+        logging.error(f"Error while submitting PR review comment: {e}")
+        return 'Error while submitting PR review comment', 500
 
     return 'Review submitted', 200
 
