@@ -73,10 +73,10 @@ def review_pr():
 
     try:
         # Get the code changes from the PR
+        logger.info(
+            f"Fetching PR details from GitHub repo {repo['full_name']} #{pr['number']}")
         gh_repo = gh.get_repo(repo['full_name'])
-        logger.info("Sending request to GitHub API")
         gh_pr = gh_repo.get_pull(pr['number'])
-        logger.info(f"Processing PR #{gh_pr.number}: {gh_pr.title}")
         code_changes = gh_pr.get_files()
     except Exception as e:
         logger.error(f"Error while fetching PR details from GitHub API: {e}")
