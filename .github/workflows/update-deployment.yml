@@ -1,4 +1,4 @@
-name: Update Deployment
+name: Continuous Deployment
 
 on:
   push:
@@ -34,4 +34,4 @@ jobs:
         kubeconfig: ${{ secrets.KUBE_CONFIG_DATA }}
 
     - name: Restart Deployment
-      run: kubectl rollout restart deployment pr-review-gpt
+      run: kubectl rollout restart deployment pr-review-gpt -n ${{ vars.NAMESPACE }}
