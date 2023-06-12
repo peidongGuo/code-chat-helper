@@ -141,7 +141,7 @@ def review_pr():
             messages=messages,
             max_tokens=800,
             temperature=0.5,
-            n=1,
+            n=2,
         )
         logger.info("Received responses from OpenAI API")
     except Exception as e:
