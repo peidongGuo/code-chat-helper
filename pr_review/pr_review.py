@@ -59,6 +59,7 @@ def validate_signature(request):
 
 
 def attach_event_id_and_repo_pr(func):
+    # Generate an event_id and attach it with repo name and pr number to the log record
     @wraps(func)
     def wrapper(*args, **kwargs):
         event_id = str(uuid.uuid4())
