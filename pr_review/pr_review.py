@@ -4,20 +4,24 @@ import hashlib
 import openai
 import logging
 import json
+import uuid
+from functools import wraps
 from flask import Flask, request, abort
 from github import Github
 
 app = Flask(__name__)
 
+
 # Custom JSON formatter
-
-
 class JsonFormatter(logging.Formatter):
     def format(self, record):
         log_entry = {
-            'asctime': self.formatTime(record, self.datefmt),
-            'levelname': record.levelname,
-            'message': record.getMessage(),
+            "asctime": self.formatTime(record, self.datefmt),
+            "levelname": record.levelname,
+            "event_id": getattr(record, "event_id", "not set"),
+            "repo": getattr(record, "repo", "not set"),
+            "pr": getattr(record, "pr", "not set"),
+            "message": record.getMessage(),
         }
         return json.dumps(log_entry)
 
@@ -42,45 +46,75 @@ webhook_secret = os.environ.get("WEBHOOK_SECRET")
 
 
 def validate_signature(request):
-    signature = request.headers.get('X-Hub-Signature-256')
+    signature = request.headers.get("X-Hub-Signature-256")
     if signature is None:
         return False
 
-    sha_name, signature = signature.split('=')
-    if sha_name != 'sha256':
+    sha_name, signature = signature.split("=")
+    if sha_name != "sha256":
         return False
 
-    mac = hmac.new(webhook_secret.encode(), msg=request.data,
-                   digestmod=hashlib.sha256)
+    mac = hmac.new(webhook_secret.encode(), msg=request.data, digestmod=hashlib.sha256)
     return hmac.compare_digest(mac.hexdigest(), signature)
 
 
-@app.route('/review_pr', methods=['POST'])
+def attach_event_id_and_repo_pr(func):
+    # Generate an event_id and attach it with repo name and pr number to the log record
+    @wraps(func)
+    def wrapper(*args, **kwargs):
+        event_id = str(uuid.uuid4())
+        event = request.get_json()
+        pr = event["pull_request"]
+        repo = event["repository"]
+
+        logger = logging.getLogger()
+        old_factory = logger.makeRecord
+
+        def record_factory(*args, **kwargs):
+            record = old_factory(*args, **kwargs)
+            record.event_id = event_id
+            record.repo = repo['full_name']
+            record.pr = pr['number']
+            return record
+
+        logger.makeRecord = record_factory
+        try:
+            return func(*args, **kwargs)
+        finally:
+            logger.makeRecord = old_factory
+
+    return wrapper
+
+
+@app.route("/review_pr", methods=["POST"])
+@attach_event_id_and_repo_pr
 def review_pr():
     logger.info("Received user request")
     if not validate_signature(request):
-        abort(401, 'Invalid signature')
+        abort(401, "Invalid signature")
     logger.info("Webhook signature validated")
 
     event = request.get_json()
+
     logger.info(f"Webhook event type: {event['action']}")
 
-    if event['action'] not in ['opened', 'synchronize', 'reopened']:
-        return 'Ignoring non-PR opening/synchronize/reopening events', 200
+    if event["action"] not in ["opened", "synchronize", "reopened"]:
+        return "Ignoring non-PR opening/synchronize/reopening events", 200
 
-    pr = event['pull_request']
-    repo = event['repository']
+    pr = event["pull_request"]
+    repo = event["repository"]
 
     try:
         # Get the code changes from the PR
         logger.info(
-            f"Fetching PR details from GitHub repo {repo['full_name']} #{pr['number']}")
-        gh_repo = gh.get_repo(repo['full_name'])
-        gh_pr = gh_repo.get_pull(pr['number'])
+            f"Fetching PR details from GitHub repo {repo['full_name']} #{pr['number']}"
+        )
+        gh_repo = gh.get_repo(repo["full_name"])
+        gh_pr = gh_repo.get_pull(pr["number"])
         code_changes = gh_pr.get_files()
     except Exception as e:
         logger.error(f"Error while fetching PR details from GitHub API: {e}")
-        return 'Error while fetching PR details from GitHub API', 500
+        return "Error while fetching PR details from GitHub API", 500
 
     # Concatenate the changes into a single string
     logger.info("Preparing GPT request with code changes")
@@ -96,9 +130,12 @@ def review_pr():
         messages = [
             {
                 "role": "system",
-                "content": "As an AI assistant with programming expertise, you are a meticulous code reviewer."},
-            {"role": "user",
-             "content": f"Review the following pull request:\n{changes_str}\n\nThe '+' means the line is added, and the '-' means the line is removed. Please provide a review result for the PR.\n\nEnsure that the output follows the template:'\n\n**[Changes]**\n\n**[Suggestions]**\n\n**[Conclusion]**\n\n**[Action]**\n\n**[Other]**\n\n"}
+                "content": "As an AI assistant with programming expertise, you are a meticulous code reviewer.",
+            },
+            {
+                "role": "user",
+                "content": f"Review the following pull request:\n{changes_str}\n\nThe '+' means the line is added, and the '-' means the line is removed. Please provide a review result for the PR.\n\nEnsure that the output follows the template:'\n\n**[Changes]**\n\n**[Suggestions]**\n\n**[Conclusion]**\n\n**[Action]**\n\n**[Other]**\n\n",
+            },
         ]
         response = openai.ChatCompletion.create(
             model="gpt-4",
@@ -110,10 +147,12 @@ def review_pr():
         logger.info("Received responses from OpenAI API")
     except Exception as e:
         logger.error(f"Error while calling OpenAI API: {e}")
-        return 'Error while calling OpenAI API', 500
+        return "Error while calling OpenAI API", 500
 
     reviews = [
-        f"Review {i+1}:\n{response.choices[i]['message']['content'].strip()}\n" for i in range(len(response.choices))]
+        f"Review {i+1}:\n{response.choices[i]['message']['content'].strip()}\n"
+        for i in range(len(response.choices))
+    ]
 
     # Combine the reviews into a single string
     reviews_str = "\n".join(reviews)
@@ -125,37 +164,36 @@ def review_pr():
     logger.info("Final review prepared")
 
     logger.info("Translating review to Chinese")
-    translate_messages = [
-        {"role": "user",
-         "content": f"将下面内容翻译为中文:\n{final_review}"
-         }
-    ]
+    translate_messages = [{"role": "user", "content": f"将下面内容翻译为中文:\n{final_review}"}]
     try:
         translated_response = openai.ChatCompletion.create(
             model="gpt-3.5-turbo",
             messages=translate_messages,
             max_tokens=2000,
             temperature=0.8,
-            n=1
+            n=1,
         )
     except Exception as e:
         logger.error(f"Error while fetching PR details from GitHub API: {e}")
-        return 'Error while fetching PR details from GitHub API', 500
+        return "Error while fetching PR details from GitHub API", 500
     logger.info("Translation completed")
 
     try:
         # Post the GPT result as a PR comment
         logger.info("Submitting PR review comment")
         gh_pr.create_issue_comment(
-            final_review + "\n" + translated_response.choices[0]['message']['content'].strip())
+            final_review
+            + "\n"
+            + translated_response.choices[0]["message"]["content"].strip()
+        )
 
         logger.info("PR review comment submitted")
     except Exception as e:
         logger.error(f"Error while submitting PR review comment: {e}")
-        return 'Error while submitting PR review comment', 500
+        return "Error while submitting PR review comment", 500
 
-    return 'Review submitted', 200
+    return "Review submitted", 200
 
 
-if __name__ == '__main__':
-    app.run(host='0.0.0.0', port=8080)
+if __name__ == "__main__":
+    app.run(host="0.0.0.0", port=8080)
