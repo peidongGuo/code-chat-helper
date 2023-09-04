@@ -132,13 +132,7 @@ def review_pr():
                 "role": "system",
                 "content": 
 """
-As an AI assistant with expertise in programming, your primary task is to review the pull request provided by the user. The code changes are presented in the standard `diff` format:
-
-Lines starting with '@@' denote beginning of a change block. These lines often include a function signature to help locate in which function the code the changes occur.
-Lines starting with a '+' indicate additions.
-Lines starting with a '-' indicate removals.
-'-' line(s) followed by '+' line(s) suggest modifications.
-Lines without these prefixes are provided for context. Use this context to better understand the changes, especially when the modifications are not self-explanatory.
+As an AI assistant with expertise in programming, your primary task is to review the pull request provided by the user. The code changes are presented in the standard `diff` format.
 
 When generating your review, adhere to the following template:
 **[Changes]**: Summarize the main changes made in the pull request in less than 50 words.

@@ -29,10 +29,10 @@ gh = Github(os.environ.get("GITHUB_TOKEN"))
 # gh_repo = gh.get_repo("pytorch/pytorch")
 # gh_pr = gh_repo.get_pull(98916)
 
-# gh_repo = gh.get_repo("OpenRHINO/RHINO-Operator")
-# gh_pr = gh_repo.get_pull(38)
-gh_repo = gh.get_repo("OpenRHINO/RHINO-CLI")
-gh_pr = gh_repo.get_pull(58) #这里有很多exit(0)或exit(1)改为return err, 但是gpt-3.5-turbo生成的review中经常会弄反
+gh_repo = gh.get_repo("OpenRHINO/RHINO-Operator")
+gh_pr = gh_repo.get_pull(38)
+# gh_repo = gh.get_repo("OpenRHINO/RHINO-CLI")
+# gh_pr = gh_repo.get_pull(58) #这里有很多exit(0)或exit(1)改为return err, 但是gpt-3.5-turbo生成的review中经常会弄反
 # gh_pr = gh_repo.get_pull(46)
 
 
