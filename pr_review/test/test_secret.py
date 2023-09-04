@@ -5,7 +5,7 @@ import hashlib
 import os
 
 # Replace these variables with your own values
-url = "http://8.210.154.109:32766/review_pr"
+url = "http://127.0.0.1:8080/review_pr"
 secret = os.environ.get("WEBHOOK_SECRET")
 
 # test sample #1

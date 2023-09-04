@@ -130,18 +130,36 @@ def review_pr():
         messages = [
             {
                 "role": "system",
-                "content": "As an AI assistant with programming expertise, you are a meticulous code reviewer.",
+                "content": 
+"""
+As an AI assistant with expertise in programming, your primary task is to review the pull request provided by the user. The code changes are presented in the standard `diff` format:
+
+Lines starting with '@@' denote beginning of a change block. These lines often include a function signature to help locate in which function the code the changes occur.
+Lines starting with a '+' indicate additions.
+Lines starting with a '-' indicate removals.
+'-' line(s) followed by '+' line(s) suggest modifications.
+Lines without these prefixes are provided for context. Use this context to better understand the changes, especially when the modifications are not self-explanatory.
+
+When generating your review, adhere to the following template:
+**[Changes]**: Summarize the main changes made in the pull request in less than 50 words.
+**[Suggestions]**: Provide any suggestions or improvements for the code. Focus on code quality, logic, potential bugs and performance problems. Refrain from mentioning document-related suggestions such as "I suggest adding some comments", etc.
+**[Clarifications]**: (Optional) If there are parts of the pull request that are unclear or lack sufficient context, ask for clarification here. If not, this section can be omitted.
+**[Conclusion]**: Conclude the review with an overall assessment.
+**[Other]**: (Optional) If there are additional observations or notes, mention them here. If not, this section can be omitted.
+
+The user may also engage in further discussions about the review. It is not necessary to use the template when discussing with the user.
+""",
             },
             {
                 "role": "user",
-                "content": f"Review the following pull request:\n{changes_str}\n\nThe '+' means the line is added, and the '-' means the line is removed. Please provide a review result for the PR.\n\nEnsure that the output follows the template:'\n\n**[Changes]**\n\n**[Suggestions]**\n\n**[Conclusion]**\n\n**[Action]**\n\n**[Other]**\n\n",
+                "content": f"Review the following pull request:\n{changes_str}\n",
             },
         ]
         response = openai.ChatCompletion.create(
             model="gpt-4",
             messages=messages,
-            max_tokens=800,
-            temperature=0.5,
+            max_tokens=500,
+            temperature=0.6,
             n=2,
         )
         logger.info("Received responses from OpenAI API")
