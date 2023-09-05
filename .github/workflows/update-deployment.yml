@@ -13,15 +13,15 @@ jobs:
     steps:
     - name: Check repository
       run: |
-        if [[ "${{ github.repository }}" != "OpenRHINO/GPT-Assist" ]]; then
-          echo "The CD workflow runs only in the upstream OpenRHINO/GPT-Assist repository.\n"
+        if [[ "${{ github.repository }}" != "ProgPanda/GPT-Assist" ]]; then
+          echo "The CD workflow runs only in the upstream ProgPanda/GPT-Assist repository.\n"
           echo "If you need to run the CD workflow in a fork repo, you may customize this workflow."
           exit 0
         fi
 
   deploy:
     runs-on: ubuntu-latest
-    if: github.repository == 'OpenRHINO/GPT-Assist'
+    if: github.repository == 'ProgPanda/GPT-Assist'
     steps:
     - name: Checkout code
       uses: actions/checkout@v3
