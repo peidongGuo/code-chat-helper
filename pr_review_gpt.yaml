@@ -35,7 +35,6 @@ apiVersion: v1
 kind: Service
 metadata:
   name: pr-review-gpt
-  namespace: gpt-assist
 spec:
   selector:
     app: pr-review-gpt
@@ -43,5 +42,4 @@ spec:
     - protocol: TCP
       port: 80
       targetPort: 8080
-      nodePort: 32866
   type: NodePort
