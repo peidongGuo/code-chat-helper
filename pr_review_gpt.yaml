@@ -1,13 +1,7 @@
 apiVersion: v1
-kind: Namespace
-metadata:
-  name: gpt-assist
----
-apiVersion: v1
 kind: Secret
 metadata:
   name: pr-review-gpt-secrets
-  namespace: gpt-assist
 type: Opaque
 data:
   OPENAI_API_KEY: ${OPENAI_API_KEY_BASE64}
@@ -18,7 +12,6 @@ apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: pr-review-gpt
-  namespace: gpt-assist
 spec:
   replicas: 1
   selector:
@@ -50,5 +43,5 @@ spec:
     - protocol: TCP
       port: 80
       targetPort: 8080
-      nodePort: 36831
+      nodePort: 32866
   type: NodePort
