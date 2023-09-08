@@ -95,7 +95,7 @@ print(reviews_str)
 # Call GPT to generate the summary of the reviews
 summary_messages = [
     {"role": "user",
-     "content": "You are a software developing expert. Please summarize the review results:\n{reviews_str}\n\nEnsure that the output follows the template:'\n\n**[Changes]**\n\n**[Suggestions]**\n\n**[Conclusion]**\n\n**[Clarifications]**\n\n**[Action]**\n\n**[Other]**\n\n'."}
+     "content": f"You are a software developing expert. Please summarize the review results:\n{reviews_str}\n\nEnsure that the output follows the template:'\n\n**[Changes]**\n\n**[Suggestions]**\n\n**[Conclusion]**\n\n**[Clarifications]**\n\n**[Action]**\n\n**[Other]**\n\n'."}
 ]
 
 summary_response = openai.ChatCompletion.create(
