@@ -16,7 +16,7 @@
         // 获取URL中的查询参数
         const urlParams = new URLSearchParams(window.location.search);
         const uuid = urlParams.get('uuid');  // 从查询参数中获取UUID
-        loadConversation();
+        loadConversation(); 
 
         function loadConversation() {
             fetch(`http://localhost:5000/get-conversation/${uuid}`)
@@ -51,8 +51,8 @@
                 .then(response => response.json())
                 .then(data => {
                     if (data.status === 'success') {
-                        // 更新页面或重新加载对话
-                        loadConversation();
+                        loadConversation();  // 重新加载对话更新页面
+                        document.getElementById('userInput').value = '';  // 清空输入框
                     }
                 });
         }
