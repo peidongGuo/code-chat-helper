@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Conversation Playground</title>
+</head>
+
+<body>
+    <div id="conversation"></div>
+    <input type="text" id="userInput">
+    <button onclick="addMessage()">Send</button>
+
+    <script>
+        // 获取URL中的查询参数
+        const urlParams = new URLSearchParams(window.location.search);
+        const uuid = urlParams.get('uuid');  // 从查询参数中获取UUID
+        loadConversation();
+
+        function loadConversation() {
+            fetch(`http://localhost:5000/get-conversation/${uuid}`)
+                .then(response => response.json())
+                .then(data => {
+                    const conversationDiv = document.getElementById('conversation');
+                    // 先清空对话框
+                    conversationDiv.innerHTML = '';
+                    data.forEach(message => {
+                        const roleDiv = document.createElement('div');
+                        roleDiv.textContent = message.role;
+                        const contentDiv = document.createElement('div');
+                        contentDiv.textContent = message.content;
+                        conversationDiv.appendChild(roleDiv);
+                        conversationDiv.appendChild(contentDiv);
+                    });
+                });
+        }
+
+        function addMessage() {
+            const userInput = document.getElementById('userInput').value;
+            fetch('http://localhost:5000/add-message', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({
+                    uuid: uuid,
+                    content: userInput
+                })
+            })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.status === 'success') {
+                        // 更新页面或重新加载对话
+                        loadConversation();
+                    }
+                });
+        }
+    </script>
+</body>
+
+</html>
