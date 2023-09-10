@@ -4,9 +4,9 @@ import os
 import openai
 
 app = Flask(__name__)
-app.secret_key = 'your_secret_key'  # 用于Flask session
+app.secret_key = os.getenv("SECRET_KEY_FOR_SESSION")  # 用于Flask session
 
-client = MongoClient('localhost', 27017)
+client = MongoClient('mongodb', 27017)
 db = client['pr_review']
 collection = db['review_comments_and_conversations']
 
@@ -29,7 +29,7 @@ def index():
 def login():
     if request.method == 'POST':
         password = request.form.get('password')
-        if password == 'your_password':  # 替换为您的密码
+        if password == os.getenv("LOGIN_PASSWORD"):  # 替换为您的密码
             session['logged_in'] = True
             return redirect(url_for('index'))
         else:
@@ -77,4 +77,4 @@ def add_message():
     return jsonify({"status": "success"})
 
 if __name__ == '__main__':
-    app.run(host='localhost')
+    app.run(host='0.0.0.0')
