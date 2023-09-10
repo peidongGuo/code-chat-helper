@@ -1,16 +1,45 @@
-from flask import Flask, request, jsonify
-from flask_cors import CORS
+from flask import Flask, request, jsonify, render_template, redirect, url_for, session
 from pymongo import MongoClient
 import os
 import openai
 
 app = Flask(__name__)
-CORS(app)
+app.secret_key = 'your_secret_key'  # 用于Flask session
+
 client = MongoClient('localhost', 27017)
 db = client['pr_review']
 collection = db['review_comments_and_conversations']
 
 openai.api_key = os.getenv("OPENAI_API_KEY")
+
+@app.before_request
+def require_login():
+    # 列出不需要登录就可以访问的端点
+    allowed_routes = ['login', 'static']
+    if 'logged_in' not in session and request.endpoint not in allowed_routes:
+        return redirect(url_for('login'))
+
+@app.route('/conversation')
+def index():
+    if 'logged_in' in session:
+        return render_template('template.html')
+    return redirect(url_for('login'))
+
+@app.route('/login', methods=['GET', 'POST'])
+def login():
+    if request.method == 'POST':
+        password = request.form.get('password')
+        if password == 'your_password':  # 替换为您的密码
+            session['logged_in'] = True
+            return redirect(url_for('index'))
+        else:
+            return "Wrong password!", 401
+    return '''
+        <form method="post">
+            Password: <input type="password" name="password">
+            <input type="submit" value="Login">
+        </form>
+    '''
 
 @app.route('/get-conversation/<uuid>', methods=['GET'])
 def get_conversation(uuid):
@@ -48,4 +77,4 @@ def add_message():
     return jsonify({"status": "success"})
 
 if __name__ == '__main__':
-    app.run()
+    app.run(host='localhost')

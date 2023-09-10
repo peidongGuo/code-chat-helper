@@ -19,7 +19,7 @@
         loadConversation(); 
 
         function loadConversation() {
-            fetch(`http://localhost:5000/get-conversation/${uuid}`)
+            fetch(`/get-conversation/${uuid}`)
                 .then(response => response.json())
                 .then(data => {
                     const conversationDiv = document.getElementById('conversation');
@@ -38,7 +38,7 @@
 
         function addMessage() {
             const userInput = document.getElementById('userInput').value;
-            fetch('http://localhost:5000/add-message', {
+            fetch('/add-message', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json'
