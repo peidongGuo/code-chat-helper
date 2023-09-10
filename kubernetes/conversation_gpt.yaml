@@ -1,0 +1,45 @@
+apiVersion: v1
+kind: Secret
+metadata:
+  name: conversation-gpt-secrets
+type: Opaque
+data:
+  OPENAI_API_KEY: ${OPENAI_API_KEY_BASE64}
+  SECRET_KEY_FOR_SESSION: ${SECRET_KEY_FOR_SESSION_BASE64}
+  LOGIN_PASSWORD: ${LOGIN_PASSWORD_BASE64}
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: conversation-gpt
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: conversation-gpt
+  template:
+    metadata:
+      labels:
+        app: conversation-gpt
+    spec:
+      containers:
+        - name: conversation-gpt
+          image: openrhino/conversation-gpt
+          ports:
+            - containerPort: 5000
+          envFrom:
+            - secretRef:
+                name: conversation-gpt-secrets
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: conversation-gpt
+spec:
+  selector:
+    app: conversation-gpt
+  ports:
+    - protocol: TCP
+      port: 80
+      targetPort: 5000
+  type: NodePort
