@@ -34,16 +34,20 @@ jobs:
 
     - name: Prepare
       id: prepare
-      run: echo "::set-output name=date::$(date +'%Y%m%d')"
+      run: echo "::set-output name=image_tag::$(date +'%Y%m%d')-$(echo ${{ github.sha }} | cut -c -7)"
 
     - name: Build and push Docker images
       run: |
           cd pr_review
-          docker build -t openrhino/pr-review-gpt:${{ steps.prepare.outputs.date }}-${{ github.sha }} .
-          docker push openrhino/pr-review-gpt:${{ steps.prepare.outputs.date }}-${{ github.sha }}
+          docker build -t openrhino/pr-review-gpt:${{ steps.prepare.outputs.image_tag }} .
+          docker push openrhino/pr-review-gpt:${{ steps.prepare.outputs.image_tag }}
+          docker tag openrhino/pr-review-gpt:${{ steps.prepare.outputs.image_tag }} openrhino/pr-review-gpt:latest
+          docker push openrhino/pr-review-gpt:latest
           cd ../conversation
-          docker build -t openrhino/conversation-gpt:${{ steps.prepare.outputs.date }}-${{ github.sha }} .
-          docker push openrhino/conversation-gpt:${{ steps.prepare.outputs.date }}-${{ github.sha }}
+          docker build -t openrhino/conversation-gpt:${{ steps.prepare.outputs.image_tag }} .
+          docker push openrhino/conversation-gpt:${{ steps.prepare.outputs.image_tag }}
+          docker tag openrhino/conversation-gpt:${{ steps.prepare.outputs.image_tag }} openrhino/conversation-gpt:latest
+          docker push openrhino/conversation-gpt:latest
 
     - name: Set up Kubernetes environment
       uses: azure/k8s-set-context@v2
@@ -52,5 +56,6 @@ jobs:
 
     - name: Restart Deployment
       run: |
-          kubectl rollout restart deployment pr-review-gpt -n ${{ vars.NAMESPACE }}
-          kubectl rollout restart deployment conversation-gpt -n ${{ vars.NAMESPACE }}
+          kubectl set image deployment/pr-review-gpt pr-review-gpt=openrhino/pr-review-gpt:${{ steps.prepare.outputs.image_tag }} -n ${{ vars.NAMESPACE }}
+          kubectl set image deployment/conversation-gpt conversation-gpt=openrhino/conversation-gpt:${{ steps.prepare.outputs.image_tag }} -n ${{ vars.NAMESPACE }}
+
