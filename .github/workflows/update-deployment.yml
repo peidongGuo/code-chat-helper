@@ -52,5 +52,5 @@ jobs:
 
     - name: Restart Deployment
       run: |
-          kubectl rollout restart deployment pr-review-gpt -n ${{ vars.NAMESPACE }}
-          kubectl rollout restart deployment conversation-gpt -n ${{ vars.NAMESPACE }}
+          kubectl set image deployment/pr-review-gpt pr-review-gpt=openrhino/pr-review-gpt:${{ steps.prepare.outputs.date }}-${{ github.sha }} -n ${{ vars.NAMESPACE }}
+          kubectl set image deployment/conversation-gpt conversation-gpt=openrhino/conversation-gpt:${{ steps.prepare.outputs.date }}-${{ github.sha }} -n ${{ vars.NAMESPACE }}
