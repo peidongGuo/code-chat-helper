@@ -32,12 +32,18 @@ jobs:
         username: openrhino
         password: ${{ secrets.DOCKER_PASSWORD }}
 
+    - name: Prepare
+      id: prepare
+      run: echo "::set-output name=date::$(date +'%Y%m%d')"
+
     - name: Build and push Docker images
       run: |
           cd pr_review
-          docker build -t openrhino/pr-review-gpt .
-          docker push openrhino/pr-review-gpt
-          cd ..
+          docker build -t openrhino/pr-review-gpt:${{ steps.prepare.outputs.date }}-${{ github.sha }} .
+          docker push openrhino/pr-review-gpt:${{ steps.prepare.outputs.date }}-${{ github.sha }}
+          cd ../conversation
+          docker build -t openrhino/conversation-gpt:${{ steps.prepare.outputs.date }}-${{ github.sha }} .
+          docker push openrhino/conversation-gpt:${{ steps.prepare.outputs.date }}-${{ github.sha }}
 
     - name: Set up Kubernetes environment
       uses: azure/k8s-set-context@v2
@@ -45,4 +51,6 @@ jobs:
         kubeconfig: ${{ secrets.KUBE_CONFIG_DATA }}
 
     - name: Restart Deployment
-      run: kubectl rollout restart deployment pr-review-gpt -n ${{ vars.NAMESPACE }}
+      run: |
+          kubectl rollout restart deployment pr-review-gpt -n ${{ vars.NAMESPACE }}
+          kubectl rollout restart deployment conversation-gpt -n ${{ vars.NAMESPACE }}
