@@ -1,1 +1,1 @@
-# GPT-Assist
+# code-chat-reviewer
