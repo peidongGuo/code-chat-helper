@@ -41,9 +41,13 @@ jobs:
           cd pr_review
           docker build -t openrhino/pr-review-gpt:${{ steps.prepare.outputs.image_tag }} .
           docker push openrhino/pr-review-gpt:${{ steps.prepare.outputs.image_tag }}
+          docker tag openrhino/pr-review-gpt:${{ steps.prepare.outputs.image_tag }} openrhino/pr-review-gpt:latest
+          docker push openrhino/pr-review-gpt:latest
           cd ../conversation
           docker build -t openrhino/conversation-gpt:${{ steps.prepare.outputs.image_tag }} .
           docker push openrhino/conversation-gpt:${{ steps.prepare.outputs.image_tag }}
+          docker tag openrhino/conversation-gpt:${{ steps.prepare.outputs.image_tag }} openrhino/conversation-gpt:latest
+          docker push openrhino/conversation-gpt:latest
 
     - name: Set up Kubernetes environment
       uses: azure/k8s-set-context@v2
