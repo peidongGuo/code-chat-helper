@@ -80,11 +80,18 @@
             /* 鼠标放上时的紫色 */
         }
 
-        button:disabled {
-            background-color: #d4d4d4 !important;
-            /* 当按钮禁用时的背景颜色，!important用于覆盖#sendButton的样式 */
+        #sendButton:disabled {
+            background-color: #d4d4d4;
+            /* 当"Send"按钮被禁用时的背景颜色 */
             cursor: not-allowed;
-            /* 显示不允许的图标 */
+            /* 显示不允许的鼠标图标 */
+        }
+
+        button:disabled {
+            background-color: #d4d4d4;
+            /* 当其他按钮被禁用时的背景颜色 */
+            cursor: not-allowed;
+            /* 显示不允许的鼠标图标 */
         }
     </style>
 </head>
