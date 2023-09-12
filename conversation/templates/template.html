@@ -18,26 +18,32 @@
             /* 间距 */
         }
 
-        .role { /* 角色 用全大写加粗显示*/
+        .role {
+            /* 角色 用全大写加粗显示*/
             text-transform: uppercase;
             font-weight: bold;
         }
 
         .content {
-            margin-bottom: 30px; /* 每条消息下方留一些空间 */
+            margin-bottom: 30px;
+            /* 每条消息下方留一些空间 */
         }
 
         .content.user {
-            background-color: #f0f0f0; /* 较浅的灰色 */
+            background-color: #f0f0f0;
+            /* 较浅的灰色 */
         }
 
         .content.assistant {
-            background-color: #e0e0e0; /* 较深的灰色 */
+            background-color: #e0e0e0;
+            /* 较深的灰色 */
         }
 
         #userInput {
-            width: 100%; /* 输入框宽度自适应 */
-            box-sizing: border-box; /* 保证padding不会影响宽度 */
+            width: 100%;
+            /* 输入框宽度自适应 */
+            box-sizing: border-box;
+            /* 保证padding不会影响宽度 */
         }
 
         button {
@@ -65,11 +71,13 @@
         }
 
         #sendButton {
-            background-color: #A16AF6; /* 紫色背景 */
+            background-color: #A16AF6;
+            /* 紫色背景 */
         }
 
         #sendButton:hover {
-            background-color: #800080; /* 鼠标放上时的紫色 */
+            background-color: #800080;
+            /* 鼠标放上时的紫色 */
         }
 
         button:disabled {
@@ -90,7 +98,8 @@
         further suggestions related to my pull request?</button>
     <button id="prototypeButton"
         onclick="presetMessage('This is a prototype implementation. So don\'t provide suggestions on fault tolerance, safety, or security concerns, which are not addressed at this stage.')">This
-        is a prototype implementation. So don't provide suggestions on fault tolerance, safety, or security concerns, which are not addressed at this stage.</button>
+        is a prototype implementation. So don't provide suggestions on fault tolerance, safety, or security concerns,
+        which are not addressed at this stage.</button>
 
     <script>
         // 获取URL中的查询参数
