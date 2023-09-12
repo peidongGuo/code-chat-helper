@@ -5,10 +5,17 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Conversation Playground</title>
+    <script src="https://cdn.jsdelivr.net/npm/marked@1.2.9/marked.min.js"></script> <!-- 引入Markdown解析库 -->
 
     <style>
         #conversation div {
-            font-family: 'Courier New', sans-serif;
+            font-family: 'Arial', sans-serif;
+            padding: 5px 10px;
+            /* 增加内边距 */
+            border-radius: 5px;
+            /* 圆角 */
+            margin-bottom: 10px;
+            /* 间距 */
         }
 
         .role { /* 角色 用全大写加粗显示*/
@@ -20,11 +27,17 @@
             margin-bottom: 30px; /* 每条消息下方留一些空间 */
         }
 
+        .content.user {
+            background-color: #f0f0f0; /* 较浅的灰色 */
+        }
+
+        .content.assistant {
+            background-color: #e0e0e0; /* 较深的灰色 */
+        }
+
         #userInput {
-            width: 100%;
-            /* 输入框宽度自适应 */
-            box-sizing: border-box;
-            /* 保证padding不会影响宽度 */
+            width: 100%; /* 输入框宽度自适应 */
+            box-sizing: border-box; /* 保证padding不会影响宽度 */
         }
     </style>
 </head>
@@ -56,11 +69,11 @@
                         if (firstAssistMsgFound) {
                             const roleDiv = document.createElement('div');
                             roleDiv.textContent = message.role;
-                            roleDiv.className = 'role';
+                            roleDiv.className = 'role ' + message.role;  /* 根据角色设置背景颜色 */
 
                             const contentDiv = document.createElement('div');
-                            contentDiv.innerHTML = message.content.replace(/\n/g, '<br>');
-                            contentDiv.className = 'content';
+                            contentDiv.innerHTML = marked(message.content);  /* 使用marked库解析Markdown */
+                            contentDiv.className = 'content ' + message.role;  /* 根据角色设置背景颜色 */
 
                             conversationDiv.appendChild(roleDiv);
                             conversationDiv.appendChild(contentDiv);
@@ -74,47 +87,47 @@
                 });
         }
 
-        function addMessage() {
-            const userInput = document.getElementById('userInput').value;
-            
-            // 防止空消息或仅含空白字符的消息
-            if (!userInput.trim()) {
-                alert('Please enter a valid message.');
-                return;
+            function addMessage() {
+                const userInput = document.getElementById('userInput').value;
+
+                // 防止空消息或仅含空白字符的消息
+                if (!userInput.trim()) {
+                    alert('Please enter a valid message.');
+                    return;
+                }
+
+                const sendButton = document.getElementById('sendButton');
+                // 用户等待返回期间禁用Send按钮，并更改按钮文字
+                sendButton.disabled = true;
+                sendButton.textContent = 'Thinking...';
+
+                fetch('/add-message', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        uuid: uuid,
+                        content: userInput
+                    })
+                })
+                    .then(response => response.json())
+                    .then(data => {
+                        if (data.status === 'success') {
+                            loadConversation();  // 重新加载对话更新页面
+                            document.getElementById('userInput').value = '';  // 清空输入框
+                        }
+                        sendButton.textContent = 'Send'; // 恢复按钮文字
+                        sendButton.disabled = false;  // 启用按钮
+                    })
+                    .catch(error => {
+                        console.error('Error sending message:', error);
+                        alert('An error occurred while sending the message. Please try again.');
+                        // 如果出现错误也启用按钮并恢复按钮文字
+                        sendButton.textContent = 'Send';
+                        sendButton.disabled = false;
+                    });
             }
-
-            const sendButton = document.getElementById('sendButton');
-            // 用户等待返回期间禁用Send按钮，并更改按钮文字
-            sendButton.disabled = true;
-            sendButton.textContent = 'Thinking...';
-
-            fetch('/add-message', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json'
-                },
-                body: JSON.stringify({
-                    uuid: uuid,
-                    content: userInput
-                })
-            })
-                .then(response => response.json())
-                .then(data => {
-                    if (data.status === 'success') {
-                        loadConversation();  // 重新加载对话更新页面
-                        document.getElementById('userInput').value = '';  // 清空输入框
-                    }
-                    sendButton.textContent = 'Send'; // 恢复按钮文字
-                    sendButton.disabled = false;  // 启用按钮
-                })
-                .catch(error => {
-                    console.error('Error sending message:', error);
-                    alert('An error occurred while sending the message. Please try again.');
-                    // 如果出现错误也启用按钮并恢复按钮文字
-                    sendButton.textContent = 'Send';
-                    sendButton.disabled = false;
-                });
-        }
     </script>
 </body>
 
