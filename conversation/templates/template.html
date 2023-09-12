@@ -30,13 +30,13 @@
         }
 
         .content.user {
-            background-color: #f0f0f0;
-            /* 较浅的灰色 */
+            background-color: #ffffff;
+            /* 以白色背景显示对话中User的部分 */
         }
 
         .content.assistant {
             background-color: #e0e0e0;
-            /* 较深的灰色 */
+            /* 以灰色背景显示对话中Assistant的部分 */
         }
 
         #userInput {
@@ -99,7 +99,7 @@
 <body>
     <div id="conversation"></div>
     <textarea id="userInput" rows="4"></textarea>
-    <br>
+    <p id="inputError" style="color: red; display: none;">Please enter a valid message.</p> <!-- 用于显示输入错误的提示 -->
     <button id="sendButton" onclick="addMessage()">Send</button>
     <button id="suggestionButton" onclick="presetMessage('Any further suggestions related to my pull request?')">Any
         further suggestions related to my pull request?</button>
@@ -150,11 +150,15 @@
 
         function addMessage() {
             const userInput = document.getElementById('userInput').value;
+            const errorElement = document.getElementById('inputError');
 
-            // 防止空消息或仅含空白字符的消息
             if (!userInput.trim()) {
+                // 遇到空消息或仅含空白字符的消息，显示错误提示
+                errorElement.style.display = 'block';
                 return;
             }
+
+            errorElement.style.display = 'none'; // 正常情况隐藏错误提示
 
             const sendButton = document.getElementById('sendButton');
             const suggestionButton = document.getElementById('suggestionButton');
