@@ -5,19 +5,38 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Conversation Playground</title>
+    <script src="https://cdn.jsdelivr.net/npm/marked@1.2.9/marked.min.js"></script> <!-- 引入Markdown解析库 -->
 
     <style>
         #conversation div {
-            font-family: 'Courier New', sans-serif;
+            font-family: 'Arial', sans-serif;
+            padding: 5px 10px;
+            /* 增加内边距 */
+            border-radius: 5px;
+            /* 圆角 */
+            margin-bottom: 10px;
+            /* 间距 */
         }
 
-        .role { /* 角色 用全大写加粗显示*/
+        .role {
+            /* 角色 用全大写加粗显示*/
             text-transform: uppercase;
             font-weight: bold;
         }
 
         .content {
-            margin-bottom: 30px; /* 每条消息下方留一些空间 */
+            margin-bottom: 30px;
+            /* 每条消息下方留一些空间 */
+        }
+
+        .content.user {
+            background-color: #ffffff;
+            /* 以白色背景显示对话中User的部分 */
+        }
+
+        .content.assistant {
+            background-color: #e0e0e0;
+            /* 以灰色背景显示对话中Assistant的部分 */
         }
 
         #userInput {
@@ -26,13 +45,68 @@
             box-sizing: border-box;
             /* 保证padding不会影响宽度 */
         }
+
+        button {
+            background-color: #007BFF;
+            /* 蓝色背景 */
+            color: #FFFFFF;
+            /* 文字为白色 */
+            border: none;
+            /* 去除边框 */
+            border-radius: 5px;
+            /* 圆角 */
+            padding: 10px 20px;
+            /* 内边距 */
+            margin: 10px 0;
+            /* 外边距 */
+            cursor: pointer;
+            /* 当鼠标放上时显示手指图标 */
+            transition: background-color 0.3s;
+            /* 背景颜色过渡效果 */
+        }
+
+        button:hover {
+            background-color: #0056b3;
+            /* 当鼠标放上时的背景颜色 */
+        }
+
+        #sendButton {
+            background-color: #A16AF6;
+            /* 紫色背景 */
+        }
+
+        #sendButton:hover {
+            background-color: #800080;
+            /* 鼠标放上时的紫色 */
+        }
+
+        #sendButton:disabled {
+            background-color: #d4d4d4;
+            /* 当"Send"按钮被禁用时的背景颜色 */
+            cursor: not-allowed;
+            /* 显示不允许的鼠标图标 */
+        }
+
+        button:disabled {
+            background-color: #d4d4d4;
+            /* 当其他按钮被禁用时的背景颜色 */
+            cursor: not-allowed;
+            /* 显示不允许的鼠标图标 */
+        }
     </style>
 </head>
 
 <body>
     <div id="conversation"></div>
     <textarea id="userInput" rows="4"></textarea>
+    <p id="inputError" style="color: red; display: none;">Please enter a valid message.</p> <!-- 用于显示输入错误的提示 -->
     <button id="sendButton" onclick="addMessage()">Send</button>
+    <button id="suggestionButton" onclick="presetMessage('Any further suggestions related to my pull request?')">Any
+        further suggestions related to my pull request?</button>
+    <button id="prototypeButton"
+        onclick="presetMessage('This is a prototype implementation. So don\'t provide suggestions on fault tolerance, safety, or security concerns, which are not addressed at this stage.')">This
+        is a prototype implementation. So don't provide suggestions on fault tolerance, safety, or security concerns,
+        which are not addressed at this stage.</button>
 
     <script>
         // 获取URL中的查询参数
@@ -56,11 +130,11 @@
                         if (firstAssistMsgFound) {
                             const roleDiv = document.createElement('div');
                             roleDiv.textContent = message.role;
-                            roleDiv.className = 'role';
+                            roleDiv.className = 'role ' + message.role;  /* 根据角色设置背景颜色 */
 
                             const contentDiv = document.createElement('div');
-                            contentDiv.innerHTML = message.content.replace(/\n/g, '<br>');
-                            contentDiv.className = 'content';
+                            contentDiv.innerHTML = marked(message.content);  /* 使用marked库解析Markdown */
+                            contentDiv.className = 'content ' + message.role;  /* 根据角色设置背景颜色 */
 
                             conversationDiv.appendChild(roleDiv);
                             conversationDiv.appendChild(contentDiv);
@@ -76,16 +150,23 @@
 
         function addMessage() {
             const userInput = document.getElementById('userInput').value;
-            
-            // 防止空消息或仅含空白字符的消息
+            const errorElement = document.getElementById('inputError');
+
             if (!userInput.trim()) {
-                alert('Please enter a valid message.');
+                // 遇到空消息或仅含空白字符的消息，显示错误提示
+                errorElement.style.display = 'block';
                 return;
             }
 
+            errorElement.style.display = 'none'; // 正常情况隐藏错误提示
+
             const sendButton = document.getElementById('sendButton');
-            // 用户等待返回期间禁用Send按钮，并更改按钮文字
+            const suggestionButton = document.getElementById('suggestionButton');
+            const prototypeButton = document.getElementById('prototypeButton');
+            // 用户等待返回期间禁用设置和发送消息的按钮，并更改"Send"按钮文字
             sendButton.disabled = true;
+            suggestionButton.disabled = true;
+            prototypeButton.disabled = true;
             sendButton.textContent = 'Thinking...';
 
             fetch('/add-message', {
@@ -106,6 +187,8 @@
                     }
                     sendButton.textContent = 'Send'; // 恢复按钮文字
                     sendButton.disabled = false;  // 启用按钮
+                    suggestionButton.disabled = false;
+                    prototypeButton.disabled = false;
                 })
                 .catch(error => {
                     console.error('Error sending message:', error);
@@ -113,7 +196,14 @@
                     // 如果出现错误也启用按钮并恢复按钮文字
                     sendButton.textContent = 'Send';
                     sendButton.disabled = false;
+                    suggestionButton.disabled = false;
+                    prototypeButton.disabled = false;
                 });
+        }
+
+        function presetMessage(message) {
+            const userInput = document.getElementById('userInput');
+            userInput.value = message;
         }
     </script>
 </body>
