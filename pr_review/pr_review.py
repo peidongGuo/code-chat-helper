@@ -47,7 +47,6 @@ gh = Github(os.environ.get("GITHUB_TOKEN"))
 # Set up webhook secret
 webhook_secret = os.environ.get("WEBHOOK_SECRET")
 
-
 def validate_signature(request):
     signature = request.headers.get("X-Hub-Signature-256")
     if signature is None:
@@ -88,6 +87,10 @@ def attach_event_id_and_repo_pr(func):
 
     return wrapper
 
+@app.route('/healthz')
+def healthz():
+    # 目前比较简单，后续可以添加任何需要的健康检查逻辑
+    return "Healthy", 200
 
 @app.route("/review_pr", methods=["POST"])
 @attach_event_id_and_repo_pr
