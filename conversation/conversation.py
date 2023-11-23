@@ -70,7 +70,7 @@ def add_message():
     # 调用GPT-4 API获取回复
     completion = openai.ChatCompletion.create(
         model="gpt-4-1106-preview",
-        messages=messages
+        messages=messages[1:] # Don't include the initial system prompt when generating subsequent conversation.
     )
     gpt_response = completion.choices[0].message
 
