@@ -64,9 +64,7 @@ def add_message():
 
     # 调用GPT-4 API获取回复
     completion = openai.ChatCompletion.create(
-        model="gpt-4",
-        max_tokens=500,
-        temperature=0.5,
+        model="gpt-4-1106-preview",
         messages=messages
     )
     gpt_response = completion.choices[0].message
