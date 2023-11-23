@@ -72,7 +72,7 @@ if issues_description != "":
     changes_str += "---------------Issues referenced---------------\n"
     changes_str += issues_description
 for change in code_changes:
-    changes_str += "---------------Files changed---------------\n"
+    changes_str += "---------------File changed---------------\n"
     changes_str += f"File: {change['filename']}\n\nPatch:\n{change['patch']}\n\nFull Content:\n{change['full_content']}\n"
 # changes_str = preprocess_changes(changes_str)
 print(changes_str)
