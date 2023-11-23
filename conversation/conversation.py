@@ -67,10 +67,17 @@ def add_message():
     conversation = collection.find_one({"uuid": uuid})
     messages = conversation.get('messages', []) if conversation else []
 
-    # 调用GPT-4 API获取回复
+    # Don't include the initial system prompt when generating subsequent conversation. Ref: issue #41
+    if len(messages) > 1 and messages[0].get("role") == "system":
+        # Exclude the first message (initial system prompt)
+        messages_to_send = messages[1:]
+    else:
+        # Otherwise, send all messages
+        messages_to_send = messages
+
     completion = openai.ChatCompletion.create(
         model="gpt-4-1106-preview",
-        messages=messages[1:] # Don't include the initial system prompt when generating subsequent conversation. Ref: issue #41
+        messages=messages_to_send
     )
     gpt_response = completion.choices[0].message
 
