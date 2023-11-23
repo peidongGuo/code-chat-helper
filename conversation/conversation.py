@@ -15,9 +15,14 @@ openai.api_key = os.getenv("OPENAI_API_KEY")
 @app.before_request
 def require_login():
     # 列出不需要登录就可以访问的端点
-    allowed_routes = ['login', 'static']
+    allowed_routes = ['login', 'healthz']
     if 'logged_in' not in session and request.endpoint not in allowed_routes:
         return redirect(url_for('login'))
+
+@app.route('/healthz')
+def healthz():
+    # 目前比较简单，后续可以添加任何需要的健康检查逻辑
+    return "Healthy", 200
 
 @app.route('/conversation')
 def index():
