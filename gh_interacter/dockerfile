@@ -16,5 +16,3 @@ EXPOSE 5000
 
 # 在容器启动时运行app.py
 CMD ["python", "gh_interacter.py"]
-
-
