@@ -1,11 +1,24 @@
-from flask import Flask, request, jsonify
+from functools import wraps
+from flask import Flask, request, jsonify, abort
 import requests
 import base64
 import os
 
 app = Flask(__name__)
 
+RHINO_API_KEY = os.getenv("RHINO_API_KEY")
+
+def require_api_key(view_function):
+    @wraps(view_function)
+    def decorated_function(*args, **kwargs):
+        if request.headers.get('X-Api-Key') and request.headers.get('X-Api-Key') == RHINO_API_KEY:
+            return view_function(*args, **kwargs)
+        else:
+            abort(401)  # Unauthorized access
+    return decorated_function
+
 @app.route('/pr_content', methods=['GET'])
+@require_api_key
 def get_pr_content():
     repo_full_name = request.args.get('repo_full_name')
     pr_number = request.args.get('pr_number')
@@ -41,6 +54,7 @@ def get_pr_content():
     })
 
 @app.route('/file_content', methods=['GET'])
+@require_api_key
 def get_file_content():
     repo_full_name = request.args.get('repo_full_name')
     file_path = request.args.get('file_path')
@@ -63,6 +77,7 @@ def get_file_content():
     return jsonify({'content': file_content_decoded})
 
 @app.route('/issue_info', methods=['GET'])
+@require_api_key
 def get_issue_info():
     repo_full_name = request.args.get('repo_full_name')
     issue_number = request.args.get('issue_number')
@@ -83,6 +98,7 @@ def get_issue_info():
     })
 
 @app.route('/submit_pr_comment', methods=['POST'])
+@require_api_key
 def submit_pr_comment():
     token = os.environ.get('GITHUB_TOKEN')
     if not token:
