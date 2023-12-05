@@ -159,7 +159,7 @@ def review_pr(event_id):
                 "role": "system",
                 "content": 
 """
-As an AI assistant with expertise in programming, your primary task is to review the pull request provided by the user. The code changes are presented in the standard `diff` format.
+As an AI assistant with expertise in programming, your primary task is to review the pull request provided by the user.
 
 When generating your review, adhere to the following template:
 **[Changes]**: Summarize the main changes made in the pull request in less than 50 words.
