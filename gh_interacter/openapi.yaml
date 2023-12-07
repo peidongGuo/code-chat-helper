@@ -1,0 +1,204 @@
+openapi: "3.0.0"
+info:
+  version: 1.0.0
+  title: GitHub Repository Interaction
+  license:
+    name: MIT
+servers:
+  - url: https://openrhino.org
+paths:
+  /pr_content:
+    get:
+      summary: Get content of a GitHub Pull Request
+      operationId: getPRContent
+      tags:
+        - pull-request
+      parameters:
+        - name: repo_full_name
+          in: query
+          description: Full name of the repository (e.g., "owner/repo")
+          required: true
+          schema:
+            type: string
+        - name: pr_number
+          in: query
+          description: The number of the pull request
+          required: true
+          schema:
+            type: integer
+            format: int32
+      responses:
+        '200':
+          description: Detailed content of the requested Pull Request
+          content:
+            application/json:    
+              schema:
+                $ref: "#/components/schemas/PullRequestContent"
+        '404':
+          description: Pull Request not found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+        default:
+          description: unexpected error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+
+  /file_content:
+    get:
+      summary: Get full content of a file in a GitHub repository
+      operationId: getFileContent
+      tags:
+        - repository
+      parameters:
+        - name: repo_full_name
+          in: query
+          description: Full name of the repository (e.g., "owner/repo")
+          required: true
+          schema:
+            type: string
+        - name: file_path
+          in: query
+          description: Path to the file in the repository
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Full content of the specified file
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  content:
+                    type: string
+        '404':
+          description: File not found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+        default:
+          description: unexpected error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+
+  /issue_info:
+    get:
+      summary: Get title and description of a GitHub Issue
+      operationId: getIssueInfo
+      tags:
+        - issue
+      parameters:
+        - name: repo_full_name
+          in: query
+          description: Full name of the repository (e.g., "owner/repo")
+          required: true
+          schema:
+            type: string
+        - name: issue_number
+          in: query
+          description: The number of the issue
+          required: true
+          schema:
+            type: integer
+            format: int32
+      responses:
+        '200':
+          description: Title and description of the requested Issue
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  title:
+                    type: string
+                  description:
+                    type: string
+        '404':
+          description: Issue not found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+        default:
+          description: unexpected error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+
+  /submit_pr_comment:
+    post:
+      summary: Submit a comment to a GitHub Pull Request
+      operationId: submitPRComment
+      tags:
+        - pull-request
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - repo_full_name
+                - pr_number
+                - comment_body
+              properties:
+                repo_full_name:
+                  type: string
+                  description: Full name of the repository (e.g., "owner/repo")
+                pr_number:
+                  type: integer
+                  format: int32
+                  description: The number of the pull request
+                comment_body:
+                  type: string
+                  description: The content of the comment to be submitted
+      responses:
+        '201':
+          description: Comment created successfully
+        '400':
+          description: Missing required parameters
+        '401':
+          description: GitHub access token is not set or invalid
+        '404':
+          description: Pull Request not found
+        '500':
+          description: Failed to create comment due to server error
+        default:
+          description: unexpected error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+
+components:
+  schemas:
+    PullRequestContent:
+      type: object
+      properties:
+        title:
+          type: string
+        body:
+          type: string
+        code_changes:
+          type: string
+          description: The text of the code changes (diff) for the pull request
+    Error:
+      type: object
+      required:
+        - code
+        - message
+      properties:
+        code:
+          type: integer
+          format: int32
+        message:
+          type: string
