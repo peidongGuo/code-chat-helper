@@ -1,3 +1,9 @@
+# 注意：
+我们正在更新该项目的功能，将不局限于 PR Review ，敬请持续关注，以下视频反应最新的阶段性进展：
+
+https://github.com/OpenRHINO/code-chat-reviewer/assets/20229719/40af494c-28d7-498f-acd6-fcf953137c9f
+
+
 # code-chat-reviewer
 
 ## 项目简介
