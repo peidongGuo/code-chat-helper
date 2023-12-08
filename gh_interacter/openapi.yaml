@@ -66,6 +66,13 @@ paths:
           required: true
           schema:
             type: string
+        - name: branch_name  # New parameter added
+          in: query
+          description: Name of the repository branch
+          required: false
+          schema:
+            type: string
+            default: 'main'
       responses:
         '200':
           description: Full content of the specified file
