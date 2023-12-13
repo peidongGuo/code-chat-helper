@@ -58,15 +58,16 @@ def get_pr_content():
 def get_file_content():
     repo_full_name = request.args.get('repo_full_name')
     file_path = request.args.get('file_path')
+    branch_name = request.args.get('branch_name', 'main')  # Default to 'main' if not specified
 
     if not repo_full_name or not file_path:
         return jsonify({'code': 400, 'message': 'Missing repo_full_name or file_path'}), 400
 
-    github_api_url = f"https://api.github.com/repos/{repo_full_name}/contents/{file_path}"
+    github_api_url = f"https://api.github.com/repos/{repo_full_name}/contents/{file_path}?ref={branch_name}"
     response = requests.get(github_api_url)
 
     if response.status_code != 200:
-        return jsonify({'code': response.status_code, 'message': 'Failed to fetch file content'}), response.status_code
+        return jsonify({'code': response.status_code, 'message': f'Failed to fetch file content from {branch_name} branch'}), response.status_code
 
     file_content_encoded = response.json().get('content')
     if file_content_encoded is None:
