@@ -29,7 +29,7 @@ paths:
             format: int32
       responses:
         '200':
-          description: Detailed content of the requested Pull Request
+          description: Detailed content of the requested Pull Request.
           content:
             application/json:    
               schema:
@@ -49,7 +49,7 @@ paths:
 
   /file_content:
     get:
-      summary: Get full content of a file in a GitHub repository
+      summary: Get full content of a file in a GitHub repository. It should be invoked during every PR review to ensure that all pertinent details are considered.
       operationId: getFileContent
       tags:
         - repository
@@ -143,7 +143,7 @@ paths:
 
   /submit_pr_comment:
     post:
-      summary: Submit a comment to a GitHub Pull Request
+      summary: Submit a comment to a GitHub Pull Request or an issue. Only call this after the content of the comment has already been   explicitly agreed by the user.
       operationId: submitPRComment
       tags:
         - pull-request
@@ -195,6 +195,12 @@ components:
           type: string
         body:
           type: string
+        source_branch:
+          type: string
+          description: The source branch of the pull request, crucial for subsequent PR Review steps, for retrieving modified files from the correct branch.
+        source_repo: 
+          type: string
+          description: Name of the source repository of the pull request, crucial for subsequent PR Review steps, for retrieving modified files from the correct repository.
         code_changes:
           type: string
           description: The text of the code changes (diff) for the pull request
