@@ -17,6 +17,11 @@ def require_api_key(view_function):
             abort(401)  # Unauthorized access
     return decorated_function
 
+def check_branch_exists(repo_full_name, branch_name):
+    github_api_url = f"https://api.github.com/repos/{repo_full_name}/branches/{branch_name}"
+    response = requests.get(github_api_url)
+    return response.status_code == 200
+
 @app.route('/pr_content', methods=['GET'])
 @require_api_key
 def get_pr_content():
@@ -58,7 +63,15 @@ def get_pr_content():
 def get_file_content():
     repo_full_name = request.args.get('repo_full_name')
     file_path = request.args.get('file_path')
-    branch_name = request.args.get('branch_name', 'main')  # Default to 'main' if not specified
+    branch_name = request.args.get('branch_name')
+    if not branch_name:
+        # 检查是否存在 main 或 master 分支
+        if check_branch_exists(repo_full_name, "main"):
+            branch_name = "main"
+        elif check_branch_exists(repo_full_name, "master"):
+            branch_name = "master"
+        else:
+            return jsonify({'code': 404, 'message': 'No main or master branch found'}), 404
 
     if not repo_full_name or not file_path:
         return jsonify({'code': 400, 'message': 'Missing repo_full_name or file_path'}), 400
