@@ -195,9 +195,12 @@ components:
           type: string
         body:
           type: string
-        source_branch:  # 新增字段
+        source_branch:
           type: string
           description: The source branch of the pull request, crucial for subsequent PR Review steps, for retrieving modified files from the correct branch.
+        source_repo: 
+          type: string
+          description: Full name of the source repository for the pull request, crucial for handling PRs from forked repositories.
         code_changes:
           type: string
           description: The text of the code changes (diff) for the pull request

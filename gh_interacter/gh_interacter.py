@@ -52,13 +52,15 @@ def get_pr_content():
 
     # 返回PR的基本信息和diff
     pr_content = response.json()
-    # 获取PR的源分支
+    # 获取PR的源分支和源仓库
     source_branch = pr_content.get('head', {}).get('ref')
+    source_repo = pr_content.get('head', {}).get('repo', {}).get('full_name')
     
     return jsonify({
         'title': pr_content.get('title'),
         'body': pr_content.get('body'),
         'source_branch': source_branch,
+        'source_repo': source_repo,      
         'code_changes': diff_response.text  # 注意，这可能是一个很大的字符串
     })
 
