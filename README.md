@@ -1,13 +1,14 @@
-# 注意：
-我们正在更新该项目的功能，将不局限于 PR Review ，敬请持续关注，以下视频反应最新的阶段性进展：
+# code-chat-helper
+RHINO Coding Helper （ https://chat.openai.com/g/g-48MTFZf5N-rhino-coding-helper-zhong-wen-ban ） 将GPT接入Git，为程序员提供软件开发方面的帮助，包括 Issue Fix 和 PR Review 等。主要功能如下：
+*   **GitHub Issue 分析和修复建议**：当用户提出与特定 GitHub Issue 相关的问题，或寻求帮助以修复某个 Issue 时，RHINO 会自动获取该 Issue 的详细描述，并分析相关的代码文件。基于这些信息，提供解决方案、代码优化建议或实现新功能的方法，进而生成相关代码。
+*   **代码文件解读**：对于用户需要帮助理解或评审的特定代码文件，RHINO 可以获取该文件的最新内容并提供详细解读。RHINO 能够将多个代码文件结合起来进行解读，还会指出代码文件中可能存在的问题，特别是当用户要求对特定代码文件进行检查或评审时。
+*   **Pull Request (PR) 审查**：当用户要求对Pull Request 进行审查时，RHINO会获取 PR 的详细信息，包括代码变更和 PR 描述。如果 PR 提到相关 Issues，RHINO也会获取这些 Issue 的信息。然后RHINO会结合 PR 描述、相关 Issue和代码变更，对PR进行全面的审查，供审查结果。如果有必要，RHINO还会获取 PR 中每个被修改文件的完整内容，以便进行全面审查。
+*   **提交评论到 PR 或 Issue**：如果用户需要，RHINO还可以向特定的 PR 或 Issue 提交评论。在提交之前，RHINO会向用户展示评论内容供审核。
+在进行这些任务时，用户还可以会RHINO进行讨论，以便获得更准确的结果。
+
+我们正在更新该项目的功能，敬请持续关注，以下视频反应较新的阶段性进展：
 
 https://github.com/OpenRHINO/code-chat-reviewer/assets/20229719/40af494c-28d7-498f-acd6-fcf953137c9f
-
-
-# code-chat-reviewer
-
-## 项目简介
-code-chat-reviewer 是一个自动化的代码审查（Pull Request Review）工具，它利用 GPT 模型对 GitHub 上的 Pull Request 进行审查。code-chat-reviewer结合了人工智能模型和现有的开发工具，以自动化代码审查过程，并提供交互界面供用户参与和讨论。
 
 ## 核心组件
 1. **pr_review.py**:
