@@ -9,13 +9,9 @@ import re
 from functools import wraps
 from flask import Flask, request, abort
 from github import Github
-from pymongo import MongoClient
 
 app = Flask(__name__)
 
-# client = MongoClient('mongodb', 27017)
-# db = client['pr_review']
-# collection = db['review_comments_and_conversations']
 
 # Custom JSON formatter
 class JsonFormatter(logging.Formatter):
@@ -152,7 +148,7 @@ def review_pr(event_id):
         changes_str += "---------------File changed---------------\n"
         changes_str += f"File: {change['filename']}\n\nPatch:\n{change['patch']}\n\nFull Content:\n{change['full_content']}\n"
 
-
+    return "Review started", 200
     # Prepare the GPT prompt and store it in MongoDB
     messages = [
             {
@@ -178,7 +174,7 @@ The user may also engage in further discussions about the review. It is not nece
         ]
     try:
         logger.info("Creating the document to store the review messages in MongoDB")
-        # collection.insert_one({"uuid": event_id, "messages": messages})
+        collection.insert_one({"uuid": event_id, "messages": messages})
     except Exception as e:
         logger.error(f"Error while creating the document to store the review messages in MongoDB: {e}")
         return "Error while creating the document to store the review messages in MongoDB", 500
@@ -197,7 +193,7 @@ The user may also engage in further discussions about the review. It is not nece
 
     try:
         logger.info("Storing the review results in MongoDB")
-        # collection.update_one({"uuid": event_id}, {"$push": {"messages": response.choices[0]['message']}})
+        collection.update_one({"uuid": event_id}, {"$push": {"messages": response.choices[0]['message']}})
     except Exception as e:
         logger.error(f"Error while storing the review results in MongoDB {e}")
         return "Error while storing the review results in MongoDB", 500
