@@ -70,7 +70,7 @@ def attach_event_id_and_repo_pr(func):
         # print(func.__name__)
         event_id = str(uuid.uuid4())  # 生成一个唯一的事件ID
         event = request.get_json()  # 从请求中获取事件数据
-        # pr = event["pull_request"]  # 从事件数据中提取PR信息
+        pr = event["pull_request"]  # 从事件数据中提取PR信息
         repo = event["repository"]  # 从事件数据中提取仓库信息
         print(json.dumps(repo))
         logger = logging.getLogger()  # 获取根日志记录器
