@@ -19,17 +19,18 @@ app = Flask(__name__)
 # collection = db['review_comments_and_conversations']
 
 # Custom JSON formatter
-class JsonFormatter(logging.Formatter):
+class JsonFormatter(logging.Formatter): 
     def format(self, record):
+        # 格式化日志记录为JSON格式
         log_entry = {
-            "asctime": self.formatTime(record, self.datefmt),
-            "levelname": record.levelname,
-            "event_id": getattr(record, "event_id", "not set"),
-            "repo": getattr(record, "repo", "not set"),
-            "pr": getattr(record, "pr", "not set"),
-            "message": record.getMessage(),
+            "asctime": self.formatTime(record, self.datefmt),  # 获取记录的时间并格式化
+            "levelname": record.levelname,  # 获取记录的日志级别
+            "event_id": getattr(record, "event_id", "not set"),  # 获取记录的事件ID，如果不存在则设置为"not set"
+            "repo": getattr(record, "repo", "not set"),  # 获取记录的仓库信息，如果不存在则设置为"not set"
+            "pr": getattr(record, "pr", "not set"),  # 获取记录的PR信息，如果不存在则设置为"not set"
+            "message": record.getMessage(),  # 获取记录的消息内容
         }
-        return json.dumps(log_entry)
+    return json.dumps(log_entry)
 
 # Set up logging
 logger = logging.getLogger()
