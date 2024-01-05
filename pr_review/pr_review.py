@@ -6,6 +6,7 @@ import logging
 import json
 import uuid
 import re
+import json
 from functools import wraps
 from flask import Flask, request, abort
 from github import Github
@@ -61,31 +62,35 @@ def validate_signature(request):
 
 
 def attach_event_id_and_repo_pr(func):
-    # Generate an event_id and attach it with repo name and pr number to the log record
+    # 生成一个事件ID，并将其与仓库名和PR号码一起附加到日志记录中
     @wraps(func)
     def wrapper(*args, **kwargs):
-        event_id = str(uuid.uuid4())
-        event = request.get_json()
-        pr = event["pull_request"]
-        repo = event["repository"]
+        print(json.dumps(request.get_json()))
+        event_id = str(uuid.uuid4())  # 生成一个唯一的事件ID
+        event = request.get_json()  # 从请求中获取事件数据
+        pr = event["pull_request"]  # 从事件数据中提取PR信息
+        repo = event["repository"]  # 从事件数据中提取仓库信息
 
-        logger = logging.getLogger()
-        old_factory = logger.makeRecord
+        logger = logging.getLogger()  # 获取根日志记录器
+        old_factory = logger.makeRecord  # 保存原始的makeRecord方法
 
+        # 定义一个新的记录工厂函数，用于替换日志记录器的makeRecord方法
         def record_factory(*args, **kwargs):
-            record = old_factory(*args, **kwargs)
-            record.event_id = event_id
-            record.repo = repo['full_name']
-            record.pr = pr['number']
-            return record
+            record = old_factory(*args, **kwargs)  # 创建一个原始的日志记录
+            record.event_id = event_id  # 将事件ID附加到日志记录中
+            record.repo = repo['full_name']  # 将仓库全名附加到日志记录中
+            record.pr = pr['number']  # 将PR号码附加到日志记录中
+            return record  # 返回修改后的日志记录
 
-        logger.makeRecord = record_factory
+        logger.makeRecord = record_factory  # 替换日志记录器的makeRecord方法
         try:
+            # 调用原始函数，并将事件ID作为关键字参数传递
             return func(*args, **kwargs, event_id=event_id)
         finally:
+            # 无论原始函数是否成功完成或引发异常，都确保恢复原始的makeRecord方法
             logger.makeRecord = old_factory
 
-    return wrapper
+    return wrapper  # 返回包装器函数，它将替换原始函数
 
 @app.route('/healthz')
 def healthz():
