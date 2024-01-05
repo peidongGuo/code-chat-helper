@@ -67,7 +67,7 @@ def attach_event_id_and_repo_pr(func):
     @wraps(func)
     def wrapper(*args, **kwargs):
         # print(json.dumps(request.get_json()))
-        print(func.__name__)
+        # print(func.__name__)
         event_id = str(uuid.uuid4())  # 生成一个唯一的事件ID
         event = request.get_json()  # 从请求中获取事件数据
         # pr = event["pull_request"]  # 从事件数据中提取PR信息
