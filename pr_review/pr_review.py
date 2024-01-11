@@ -97,7 +97,7 @@ def attach_event_id_and_repo_pr(func):
 @app.route('/healthz')
 def healthz():
     # 目前比较简单，后续可以添加任何需要的健康检查逻辑
-    return "Healthy", 200
+    return "Healthy20240111", 200
 
 @app.route("/review_pr", methods=["POST"])
 @attach_event_id_and_repo_pr
