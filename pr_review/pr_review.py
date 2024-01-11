@@ -6,6 +6,7 @@ import logging
 import json
 import uuid
 import re
+import json
 from functools import wraps
 from flask import Flask, request, abort
 from github import Github
@@ -18,15 +19,16 @@ db = client['pr_review']
 collection = db['review_comments_and_conversations']
 
 # Custom JSON formatter
-class JsonFormatter(logging.Formatter):
+class JsonFormatter(logging.Formatter): 
     def format(self, record):
+        # 格式化日志记录为JSON格式
         log_entry = {
-            "asctime": self.formatTime(record, self.datefmt),
-            "levelname": record.levelname,
-            "event_id": getattr(record, "event_id", "not set"),
-            "repo": getattr(record, "repo", "not set"),
-            "pr": getattr(record, "pr", "not set"),
-            "message": record.getMessage(),
+            "asctime": self.formatTime(record, self.datefmt),  # 获取记录的时间并格式化
+            "levelname": record.levelname,  # 获取记录的日志级别
+            "event_id": getattr(record, "event_id", "not set"),  # 获取记录的事件ID，如果不存在则设置为"not set"
+            "repo": getattr(record, "repo", "not set"),  # 获取记录的仓库信息，如果不存在则设置为"not set"
+            "pr": getattr(record, "pr", "not set"),  # 获取记录的PR信息，如果不存在则设置为"not set"
+            "message": record.getMessage(),  # 获取记录的消息内容
         }
         return json.dumps(log_entry)
 
@@ -61,31 +63,36 @@ def validate_signature(request):
 
 
 def attach_event_id_and_repo_pr(func):
-    # Generate an event_id and attach it with repo name and pr number to the log record
+    # 生成一个事件ID，并将其与仓库名和PR号码一起附加到日志记录中
     @wraps(func)
     def wrapper(*args, **kwargs):
-        event_id = str(uuid.uuid4())
-        event = request.get_json()
-        pr = event["pull_request"]
-        repo = event["repository"]
+        # print(json.dumps(request.get_json()))
+        # print(func.__name__)
+        event_id = str(uuid.uuid4())  # 生成一个唯一的事件ID
+        event = request.get_json()  # 从请求中获取事件数据
+        pr = event["pull_request"]  # 从事件数据中提取PR信息
+        repo = event["repository"]  # 从事件数据中提取仓库信息
+        print(json.dumps(repo))
+        logger = logging.getLogger()  # 获取根日志记录器
+        old_factory = logger.makeRecord  # 保存原始的makeRecord方法
 
-        logger = logging.getLogger()
-        old_factory = logger.makeRecord
-
+        # 定义一个新的记录工厂函数，用于替换日志记录器的makeRecord方法
         def record_factory(*args, **kwargs):
-            record = old_factory(*args, **kwargs)
-            record.event_id = event_id
-            record.repo = repo['full_name']
-            record.pr = pr['number']
-            return record
+            record = old_factory(*args, **kwargs)  # 创建一个原始的日志记录
+            record.event_id = event_id  # 将事件ID附加到日志记录中
+            record.repo = repo['full_name']  # 将仓库全名附加到日志记录中
+            # record.pr = pr['number']  # 将PR号码附加到日志记录中
+            return record  # 返回修改后的日志记录
 
-        logger.makeRecord = record_factory
+        logger.makeRecord = record_factory  # 替换日志记录器的makeRecord方法
         try:
+            # 调用原始函数，并将事件ID作为关键字参数传递
             return func(*args, **kwargs, event_id=event_id)
         finally:
+            # 无论原始函数是否成功完成或引发异常，都确保恢复原始的makeRecord方法
             logger.makeRecord = old_factory
 
-    return wrapper
+    return wrapper  # 返回包装器函数，它将替换原始函数
 
 @app.route('/healthz')
 def healthz():
@@ -178,7 +185,7 @@ The user may also engage in further discussions about the review. It is not nece
         ]
     try:
         logger.info("Creating the document to store the review messages in MongoDB")
-        collection.insert_one({"uuid": event_id, "messages": messages})
+        # collection.insert_one({"uuid": event_id, "messages": messages})
     except Exception as e:
         logger.error(f"Error while creating the document to store the review messages in MongoDB: {e}")
         return "Error while creating the document to store the review messages in MongoDB", 500
@@ -197,7 +204,7 @@ The user may also engage in further discussions about the review. It is not nece
 
     try:
         logger.info("Storing the review results in MongoDB")
-        collection.update_one({"uuid": event_id}, {"$push": {"messages": response.choices[0]['message']}})
+        # collection.update_one({"uuid": event_id}, {"$push": {"messages": response.choices[0]['message']}})
     except Exception as e:
         logger.error(f"Error while storing the review results in MongoDB {e}")
         return "Error while storing the review results in MongoDB", 500
@@ -239,4 +246,4 @@ For further discussion with the AI Reviewer, please visit: http://8.210.154.109:
 
 
 if __name__ == "__main__":
-    app.run(host="0.0.0.0", port=8080)
+    app.run(host="0.0.0.0", port=9000)
