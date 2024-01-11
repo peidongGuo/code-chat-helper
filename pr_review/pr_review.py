@@ -14,9 +14,9 @@ from pymongo import MongoClient
 
 app = Flask(__name__)
 
-# client = MongoClient('mongodb', 27017)
-# db = client['pr_review']
-# collection = db['review_comments_and_conversations']
+client = MongoClient('mongodb', 27017)
+db = client['pr_review']
+collection = db['review_comments_and_conversations']
 
 # Custom JSON formatter
 class JsonFormatter(logging.Formatter): 
